@@ -4,6 +4,16 @@ codemap-tool/
 # Claude Code template's own git history (we want the .claude *content*, not its git)
 .claude/.git/
 
+# Personal interview-prep notes (job posting, source repo URL, original v1 brainstorm).
+# Kept locally for reference; excluded from the public repo so the project is reusable
+# as a portfolio piece independent of this hiring case.
+notes/
+
+# Inner Next.js project's deps (don't track twice)
+startup-tracker/node_modules/
+startup-tracker/.next/
+startup-tracker/.vercel/
+
 # Node / Next.js (for when bluefields-tracker is created)
 node_modules/
 .next/
