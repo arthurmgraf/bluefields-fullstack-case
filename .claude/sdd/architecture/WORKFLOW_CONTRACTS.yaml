@@ -1,0 +1,1127 @@
+# AgentSpec 5.0 - Workflow Contracts
+# Parallel SDD + Dev Loop with worktrees, Docker AFK, auto-review, persistent memory,
+# dashboard, and contextual guidance
+# Version: 5.0.0
+# Date: 2026-02-25
+
+version: "5.0"
+name: "AgentSpec"
+description: "5-phase development workflow with parallel execution, auto-review, and contextual guidance"
+
+# =============================================================================
+# WORKFLOW OVERVIEW
+# =============================================================================
+
+workflow:
+  phases:
+    - name: "Brainstorm"
+      number: 0
+      command: "/brainstorm"
+      agent: "brainstorm-agent"
+      purpose: "Collaborative exploration to clarify intent and approach"
+      input: "Raw idea, request, or problem statement"
+      output: "BRAINSTORM_{FEATURE}.md"
+      model: "opus"
+      optional: true
+      execution: sequential
+
+    - name: "Define"
+      number: 1
+      command: "/define"
+      agent: "define-agent"
+      purpose: "Capture and validate requirements"
+      input: "Raw notes, emails, conversations, BRAINSTORM document, or direct requirements"
+      output: "DEFINE_{FEATURE}.md"
+      model: "opus"
+      execution: sequential
+
+    - name: "Design"
+      number: 2
+      command: "/design"
+      agent: "design-agent"
+      purpose: "Create architecture and technical specification with parallel background research"
+      input: "DEFINE_{FEATURE}.md"
+      output: "DESIGN_{FEATURE}.md"
+      model: "opus"
+      execution: parallel_research
+      parallel_research:
+        enabled: true
+        subagents:
+          - name: "patterns-researcher"
+            task: "Search existing codebase patterns"
+            tools: [Read, Glob, Grep]
+            background: true
+          - name: "kb-researcher"
+            task: "Search relevant KB domains"
+            tools: [Read, Glob, Grep]
+            background: true
+
+    - name: "Build"
+      number: 3
+      command: "/build"
+      agent: "build-agent"
+      purpose: "Execute implementation with parallel worktree orchestration"
+      input: "DESIGN_{FEATURE}.md"
+      output: "Code files + BUILD_REPORT_{FEATURE}.md + REVIEW_REPORT_{FEATURE}.md + DASHBOARD_{FEATURE}.md"
+      model: "sonnet"
+      execution: parallel_worktrees
+      parallel_build:
+        enabled: true
+        plan_mode_required: true
+        max_work_groups: 5
+        auto_review: true
+        auto_diagrams: true
+        dashboard_enabled: true
+        cache_verification: true
+
+    - name: "Ship"
+      number: 4
+      command: "/ship"
+      agent: "ship-agent"
+      purpose: "Archive feature with lessons learned, auto-diagrams, and history index"
+      input: "All feature artifacts"
+      output: "archive/{FEATURE}/SHIPPED_{DATE}.md + HISTORY_{FEATURE}.md"
+      model: "haiku"
+      execution: sequential
+
+  cross_phase:
+    - name: "Iterate"
+      command: "/iterate"
+      agent: "iterate-agent"
+      purpose: "Update any phase document when changes needed"
+      works_with: ["Brainstorm", "Define", "Design"]
+      phase_3_note: "To change code during Build, update DESIGN then run /build"
+      model: "sonnet"
+
+# =============================================================================
+# PHASE 0: BRAINSTORM (Optional)
+# =============================================================================
+
+brainstorm:
+  command:
+    name: "/brainstorm"
+    file: ".claude/commands/workflow/brainstorm.md"
+    args: "<idea-or-request>"
+    examples:
+      - '/brainstorm "Build a user notification system"'
+      - '/brainstorm notes/rough-idea.txt'
+      - '/brainstorm "I want to add data export functionality"'
+
+  agent:
+    name: "brainstorm-agent"
+    file: ".claude/agents/workflow/brainstorm-agent.md"
+    model: "opus"
+    tools:
+      - Read
+      - Write
+      - AskUserQuestion
+      - Glob
+      - Grep
+      - TodoWrite
+
+  input:
+    types:
+      - raw_idea
+      - problem_statement
+      - feature_request
+      - rough_notes
+      - comparison_request
+
+  output:
+    file: ".claude/sdd/features/BRAINSTORM_{FEATURE}.md"
+    template: ".claude/sdd/templates/BRAINSTORM_TEMPLATE.md"
+    status_values:
+      - "Exploring"
+      - "Approaches Identified"
+      - "Ready for Define"
+
+  process:
+    steps:
+      - name: "Gather Context"
+        description: "Read project files, recent commits, existing patterns"
+      - name: "Discovery Questions"
+        description: "Ask one question at a time, minimum 3 questions"
+      - name: "Collect Samples"
+        description: "Ask about sample inputs, outputs, ground truth for LLM grounding"
+      - name: "Explore Approaches"
+        description: "Present 2-3 approaches with trade-offs and recommendation"
+      - name: "Apply YAGNI"
+        description: "Remove unnecessary features, document what was removed"
+      - name: "Validate Incrementally"
+        description: "Present design in sections, check after each (min 2)"
+      - name: "Generate Document"
+        description: "Write BRAINSTORM file with draft requirements and sample inventory"
+      - name: "Contextual Guidance"
+        description: "Show artifacts generated, paths, and next step command"
+
+  questioning:
+    principles:
+      - one_question_at_a_time: "Never ask multiple questions in one message"
+      - multiple_choice_preferred: "Easier to answer than open-ended"
+      - minimum_questions: 3
+      - open_ended_ok: "When exploring unknown territory"
+
+  approaches:
+    minimum: 2
+    maximum: 3
+    format:
+      - name: "Descriptive name"
+      - description: "What it does"
+      - pros: "Clear advantages"
+      - cons: "Honest trade-offs"
+      - recommendation: "Why or why not"
+    rules:
+      - lead_with_recommendation: "Always state your preferred option first"
+      - explain_reasoning: "Don't just list, explain why"
+
+  yagni:
+    questions:
+      - "Do we need this for MVP?"
+      - "Does this solve the core problem?"
+      - "Would the user miss this?"
+    action: "If answer is 'no' to any, remove the feature"
+    documentation: "All removed features must be documented with reasoning"
+
+  validation:
+    incremental: true
+    section_size: "200-300 words"
+    minimum_validations: 2
+    checkpoint_format: "Does this look right so far?"
+
+  quality_gate:
+    minimum_questions: 3
+    sample_collection_asked: true
+    minimum_approaches: 2
+    minimum_validations: 2
+    user_confirmed_approach: true
+    yagni_applied: true
+    draft_requirements_included: true
+
+  contextual_guidance:
+    artifacts:
+      - type: "BRAINSTORM"
+        path: ".claude/sdd/features/BRAINSTORM_{FEATURE}.md"
+    next_command: "/define .claude/sdd/features/BRAINSTORM_{FEATURE}.md"
+
+  anti_patterns:
+    - question_dump: "Asking multiple questions at once"
+    - assuming_answers: "Not asking, just proceeding"
+    - single_approach: "Only presenting one option"
+    - skipping_validation: "Not checking understanding"
+    - feature_creep: "Not applying YAGNI"
+    - jumping_to_solution: "Skipping problem understanding"
+
+# =============================================================================
+# PHASE 1: DEFINE
+# =============================================================================
+
+define:
+  command:
+    name: "/define"
+    file: ".claude/commands/workflow/define.md"
+    args: "<input>"
+    examples:
+      - "/define notes/meeting-notes.md"
+      - "/define \"Build a REST API for user management\""
+      - "/define docs/stakeholder-email.txt"
+
+  agent:
+    name: "define-agent"
+    file: ".claude/agents/workflow/define-agent.md"
+    model: "opus"
+    tools:
+      - Read
+      - Write
+      - AskUserQuestion
+      - TodoWrite
+
+  input:
+    types:
+      - brainstorm_document
+      - meeting_notes
+      - email_thread
+      - conversation
+      - direct_requirement
+      - mixed_sources
+
+  output:
+    file: ".claude/sdd/features/DEFINE_{FEATURE}.md"
+    template: ".claude/sdd/templates/DEFINE_TEMPLATE.md"
+    status_values:
+      - "Draft"
+      - "In Progress"
+      - "Needs Clarification"
+      - "Ready for Design"
+
+  process:
+    steps:
+      - name: "Load Context"
+        description: "Read template and input files"
+      - name: "Classify Input"
+        description: "Identify input type (meeting notes, email, etc.)"
+      - name: "Extract Entities"
+        description: "Pull structured data from unstructured input"
+      - name: "Calculate Clarity Score"
+        description: "Score each element 0-3, total must be >= 12"
+      - name: "Fill Gaps"
+        description: "Ask clarifying questions if score < 12"
+      - name: "Generate Document"
+        description: "Write DEFINE file following template"
+      - name: "Contextual Guidance"
+        description: "Show artifacts generated, paths, and next step command"
+
+  extraction_elements:
+    - name: "problem"
+      patterns: ["We're struggling with...", "The issue is...", "Pain point:"]
+    - name: "users"
+      patterns: ["For the team...", "Customers want...", "Users need..."]
+    - name: "goals_with_priority"
+      patterns: ["We need to...", "Must have...", "Should have...", "Nice-to-have..."]
+      priority_classification:
+        MUST: "MVP fails without this (non-negotiable)"
+        SHOULD: "Important, but workaround exists"
+        COULD: "Nice-to-have, cut first if timeline tight"
+    - name: "success_criteria"
+      patterns: ["Success means...", "We'll know when...", "Measured by..."]
+    - name: "acceptance_tests"
+      patterns: ["Given/When/Then", "Test case:", "Scenario:"]
+    - name: "constraints"
+      patterns: ["Must work with...", "Can't change...", "Limited by..."]
+    - name: "out_of_scope"
+      patterns: ["Not including...", "Deferred to...", "Excluded:"]
+    - name: "assumptions"
+      patterns: ["Assuming that...", "We expect...", "If X then...", "Depends on..."]
+      format:
+        id: "A-001, A-002, etc."
+        statement: "What we're assuming"
+        impact_if_wrong: "What happens if assumption is invalid"
+        validated: "Yes/No checkbox"
+      note: "BRAINSTORM captures exploratory assumptions; DEFINE formalizes them into trackable risks"
+
+  quality_gate:
+    clarity_score:
+      minimum: 12
+      maximum: 15
+      breakdown:
+        problem: 3
+        users: 3
+        goals: 3
+        success: 3
+        scope: 3
+
+  required_sections:
+    - metadata
+    - problem_statement
+    - target_users
+    - goals  # With MUST/SHOULD/COULD priority
+    - success_criteria
+    - acceptance_tests
+    - out_of_scope
+    - constraints
+    - assumptions
+    - clarity_score_breakdown
+    - open_questions
+    - revision_history
+
+  contextual_guidance:
+    artifacts:
+      - type: "DEFINE"
+        path: ".claude/sdd/features/DEFINE_{FEATURE}.md"
+    next_command: "/design .claude/sdd/features/DEFINE_{FEATURE}.md"
+
+  anti_patterns:
+    - vague_language: "Words like 'improve', 'better', 'faster' without metrics"
+    - missing_users: "No identified target users"
+    - untestable_criteria: "Success criteria that can't be measured"
+    - implementation_details: "How-to in Define phase (belongs in Design)"
+
+# =============================================================================
+# PHASE 2: DESIGN (with Parallel Background Research)
+# =============================================================================
+
+design:
+  command:
+    name: "/design"
+    file: ".claude/commands/workflow/design.md"
+    args: "<define-file>"
+    examples:
+      - "/design .claude/sdd/features/DEFINE_USER_NOTIFICATIONS.md"
+      - "/design DEFINE_USER_AUTH.md"
+      - "/design .claude/sdd/features/DEFINE_DATA_EXPORT.md"
+
+  agent:
+    name: "design-agent"
+    file: ".claude/agents/workflow/design-agent.md"
+    model: "opus"
+    memory: project
+    tools:
+      - Read
+      - Write
+      - Glob
+      - Grep
+      - TodoWrite
+      - Task
+
+  parallel_research:
+    enabled: true
+    description: "Leader spawns background subagents to research in parallel before synthesizing"
+    subagents:
+      - role: "patterns-researcher"
+        task: "Search existing codebase for relevant patterns, conventions, and integration points"
+        tools: [Read, Glob, Grep]
+        background: true
+      - role: "kb-researcher"
+        task: "Search KB domains relevant to the feature (pydantic, gcp, crewai, etc.)"
+        tools: [Read, Glob, Grep]
+        background: true
+
+  input:
+    file: ".claude/sdd/features/DEFINE_{FEATURE}.md"
+    required_sections:
+      - problem_statement
+      - success_criteria
+      - acceptance_tests
+
+  output:
+    file: ".claude/sdd/features/DESIGN_{FEATURE}.md"
+    template: ".claude/sdd/templates/DESIGN_TEMPLATE.md"
+
+  process:
+    steps:
+      - name: "Load DEFINE"
+        description: "Read DEFINE document to understand requirements"
+      - name: "Spawn Research Subagents"
+        description: "Launch background subagents for parallel codebase and KB research"
+      - name: "Await Research Results"
+        description: "Collect and synthesize findings from all background subagents"
+      - name: "Create Architecture"
+        description: "Design system with ASCII diagram, components, data flow"
+      - name: "Assign Work Groups"
+        description: "Partition file manifest into independent work groups for parallel build"
+      - name: "Document Decisions"
+        description: "Record inline ADRs with status, date, context, choice, rationale"
+      - name: "Define Code Patterns"
+        description: "Provide copy-paste ready code snippets"
+      - name: "Plan Testing Strategy"
+        description: "Define unit, integration, E2E tests with coverage goals"
+      - name: "Save Document"
+        description: "Write DESIGN file following template"
+      - name: "Contextual Guidance"
+        description: "Show artifacts generated, paths, and next step command"
+
+  work_group_rules:
+    description: "File manifest must be partitioned into independent work groups for parallel build"
+    rule: "Files in different work groups must have ZERO cross-dependencies"
+    algorithm: |
+      For each file in manifest, check Dependencies column.
+      If file A depends on file B, both must be in the SAME work group.
+      Files with no dependencies can be in any group.
+      Result: N work groups where no group depends on another group.
+
+  required_sections:
+    - architecture_overview
+    - components
+    - key_decisions
+    - file_manifest  # Must include Work Group column
+    - code_patterns
+    - testing_strategy
+
+  file_manifest_columns:
+    - number
+    - file_path
+    - action
+    - purpose
+    - agent
+    - work_group
+    - dependencies
+
+  agent_discovery:
+    method: "frontmatter"
+    scan_path: ".claude/agents/**/*.md"
+    match_by:
+      - file_type
+      - purpose_keywords
+      - path_patterns
+      - kb_domains
+
+  contextual_guidance:
+    artifacts:
+      - type: "DESIGN"
+        path: ".claude/sdd/features/DESIGN_{FEATURE}.md"
+    next_command: "/build .claude/sdd/features/DESIGN_{FEATURE}.md"
+
+  anti_patterns:
+    - shared_code: "Dependencies across deployable units"
+    - hardcoded_config: "Values that should be in YAML"
+    - circular_deps: "A depends on B depends on A"
+    - missing_tests: "No testing strategy defined"
+    - no_work_groups: "File manifest without work group partitioning"
+
+# =============================================================================
+# PHASE 3: BUILD (with Parallel Worktree Orchestration)
+# =============================================================================
+
+build:
+  command:
+    name: "/build"
+    file: ".claude/commands/workflow/build.md"
+    args: "<design-file> [--docker]"
+    examples:
+      - "/build .claude/sdd/features/DESIGN_USER_NOTIFICATIONS.md"
+      - "/build .claude/sdd/features/DESIGN_USER_NOTIFICATIONS.md --docker"
+
+  agent:
+    name: "build-agent"
+    file: ".claude/agents/workflow/build-agent.md"
+    model: "sonnet"
+    memory: project
+    isolation: worktree
+    tools:
+      - Read
+      - Write
+      - Edit
+      - Bash
+      - Glob
+      - Grep
+      - TodoWrite
+      - Task
+
+  flags:
+    - name: "--docker"
+      description: "Run each worktree in Docker sandbox (recommended for AFK mode)"
+      requires_docker: true
+      fallback: "Runs without sandbox if Docker not installed"
+
+  input:
+    files:
+      - ".claude/sdd/features/DESIGN_{FEATURE}.md"
+      - ".claude/sdd/features/DEFINE_{FEATURE}.md"
+
+  output:
+    code: "As specified in DESIGN file manifest"
+    report: ".claude/sdd/reports/BUILD_REPORT_{FEATURE}.md"
+    review_report: ".claude/sdd/reports/REVIEW_REPORT_{FEATURE}.md"
+    dashboard: ".claude/sdd/reports/DASHBOARD_{FEATURE}.md"
+    templates:
+      build_report: ".claude/sdd/templates/BUILD_REPORT_TEMPLATE.md"
+      review_report: ".claude/sdd/templates/REVIEW_REPORT_TEMPLATE.md"
+      dashboard: ".claude/sdd/templates/DASHBOARD_TEMPLATE.md"
+
+  parallel_build:
+    enabled: true
+    plan_mode_required: true
+    max_work_groups: 5
+    dashboard_enabled: true
+    cache_verification: true
+
+  execution:
+    steps:
+      - name: "Parse Manifest"
+        description: "Read DESIGN manifest, identify work groups"
+      - name: "Plan Mode"
+        description: "Spawn each work group subagent in plan-only mode; leader reviews and approves plans"
+      - name: "Parallel Execute"
+        description: "Approved subagents implement in isolated worktrees concurrently"
+      - name: "Collect Results"
+        description: "Leader awaits all subagents, collects outputs"
+      - name: "Merge Worktrees"
+        description: "Merge each worktree into main branch; report conflicts without auto-merging"
+      - name: "Verify"
+        description: "Run ruff + pytest on merged code; incremental cache for per-file checks"
+      - name: "Generate Reports"
+        description: "BUILD_REPORT with didactic explanations + DASHBOARD update"
+      - name: "Auto Review"
+        description: "code-reviewer runs automatically, generates REVIEW_REPORT"
+      - name: "Auto Diagrams"
+        description: "generate-diagrams runs before /ship if auto_diagrams enabled"
+
+  plan_mode:
+    description: "Each subagent presents a plan before implementing"
+    subagent_flow:
+      - step: "Receive work group assignment"
+      - step: "Generate plan (read-only, no writes)"
+      - step: "Submit plan to leader"
+      - step: "Leader approves or rejects with feedback"
+      - step: "If rejected, revise plan (max 3 attempts)"
+      - step: "If approved, implement in worktree"
+    rejection_handling: "After 3 rejections, leader implements work group directly"
+
+  verification:
+    cache_enabled: true
+    cache_method: "git diff --name-only to identify changed files"
+    per_file:
+      - "ruff check {file}"
+    incremental:
+      - "ruff check {changed_files}"
+    full:
+      - "ruff check ."
+      - "pytest"
+
+  didactic_explanation:
+    required: true
+    per_file_format:
+      what: "What this file does (1-2 sentences)"
+      why: "Why this approach was chosen (technical decision)"
+      how: "How it works internally (educational explanation)"
+
+  auto_review:
+    enabled: true
+    agent: "code-reviewer"
+    memory: project
+    output: ".claude/sdd/reports/REVIEW_REPORT_{FEATURE}.md"
+    trigger: "After merge and verification pass"
+
+  docker_afk:
+    enabled_by_flag: "--docker"
+    description: "Each worktree runs in isolated Docker container"
+    resource_limits:
+      cpu: "1 core"
+      memory: "2GB"
+    fallback: "If Docker not installed, run without sandbox with user warning"
+
+  code_standards:
+    - no_inline_comments
+    - type_hints_required
+    - self_documenting_names
+    - config_over_hardcode
+
+  error_handling:
+    worktree_failure: "Leader resumes subagent once; if fails again, implements directly"
+    merge_conflict: "Report to user with diff; do not auto-merge"
+    plan_rejection_limit: "After 3 rejections, leader implements directly"
+    docker_unavailable: "Warn user, continue without sandbox"
+    context_limit: "Hook de Stop saves agent state to memory before compaction"
+
+  contextual_guidance:
+    artifacts:
+      - type: "BUILD_REPORT"
+        path: ".claude/sdd/reports/BUILD_REPORT_{FEATURE}.md"
+      - type: "REVIEW_REPORT"
+        path: ".claude/sdd/reports/REVIEW_REPORT_{FEATURE}.md"
+      - type: "DASHBOARD"
+        path: ".claude/sdd/reports/DASHBOARD_{FEATURE}.md"
+    next_command: "/ship .claude/sdd/features/DEFINE_{FEATURE}.md"
+
+  anti_patterns:
+    - improvising: "Creating files not in manifest"
+    - skipping_verify: "Not testing after creation"
+    - todo_comments: "Leaving TODOs in code"
+    - inline_comments: "Explaining code with comments"
+    - auto_merge_conflicts: "Merging conflicting worktrees without user input"
+
+# =============================================================================
+# PHASE 4: SHIP
+# =============================================================================
+
+ship:
+  command:
+    name: "/ship"
+    file: ".claude/commands/workflow/ship.md"
+    args: "<define-file>"
+    examples:
+      - "/ship .claude/sdd/features/DEFINE_USER_NOTIFICATIONS.md"
+
+  agent:
+    name: "ship-agent"
+    file: ".claude/agents/workflow/ship-agent.md"
+    model: "haiku"
+    tools:
+      - Read
+      - Write
+      - Bash
+      - Glob
+
+  input:
+    required:
+      - ".claude/sdd/features/DEFINE_{FEATURE}.md"
+      - ".claude/sdd/features/DESIGN_{FEATURE}.md"
+      - ".claude/sdd/reports/BUILD_REPORT_{FEATURE}.md"
+    optional:
+      - ".claude/sdd/reports/REVIEW_REPORT_{FEATURE}.md"
+      - ".claude/sdd/reports/DASHBOARD_{FEATURE}.md"
+
+  output:
+    archive_folder: ".claude/sdd/archive/{FEATURE}/"
+    shipped_file: "SHIPPED_{DATE}.md"
+    history_file: ".claude/sdd/archive/{FEATURE}/HISTORY_{FEATURE}.md"
+    template: ".claude/sdd/templates/SHIPPED_TEMPLATE.md"
+    history_template: ".claude/sdd/templates/HISTORY_TEMPLATE.md"
+
+  archive_contents:
+    - "BRAINSTORM_{FEATURE}.md"  # Optional - if Phase 0 was used
+    - "DEFINE_{FEATURE}.md"
+    - "DESIGN_{FEATURE}.md"
+    - "BUILD_REPORT_{FEATURE}.md"
+    - "REVIEW_REPORT_{FEATURE}.md"  # If auto-review ran
+    - "DASHBOARD_{FEATURE}.md"  # If dashboard was generated
+    - "SHIPPED_{DATE}.md"
+    - "HISTORY_{FEATURE}.md"
+
+  auto_diagrams:
+    enabled: true
+    trigger: "Before archiving, if diagrams not generated"
+    command: "/generate-diagrams"
+    output: "diagrams/{FEATURE}/"
+
+  history_index:
+    enabled: true
+    description: "Chronological record of all artifacts with timestamps"
+    file: "HISTORY_{FEATURE}.md"
+
+  lessons_learned:
+    categories:
+      - process
+      - technical
+      - communication
+      - tools
+
+  pre_ship_checklist:
+    - build_report_complete
+    - all_tests_passing
+    - no_blocking_issues
+    - acceptance_tests_verified
+    - review_report_exists
+
+  contextual_guidance:
+    artifacts:
+      - type: "SHIPPED"
+        path: ".claude/sdd/archive/{FEATURE}/SHIPPED_{DATE}.md"
+      - type: "HISTORY"
+        path: ".claude/sdd/archive/{FEATURE}/HISTORY_{FEATURE}.md"
+    next_command: "(none - feature complete)"
+
+# =============================================================================
+# CROSS-PHASE: ITERATE
+# =============================================================================
+
+iterate:
+  command:
+    name: "/iterate"
+    file: ".claude/commands/workflow/iterate.md"
+    args: '<file> "<change-description>"'
+    examples:
+      - '/iterate DEFINE_DATA_EXPORT.md "Add support for CSV format"'
+      - '/iterate DESIGN_AUTH.md "Change from JWT to session-based"'
+      - '/iterate .claude/sdd/features/DEFINE_AUTH.md "Add multi-language support"'
+
+  agent:
+    name: "iterate-agent"
+    file: ".claude/agents/workflow/iterate-agent.md"
+    model: "sonnet"
+    tools:
+      - Read
+      - Write
+      - Edit
+      - AskUserQuestion
+      - TodoWrite
+
+  works_with:
+    - phase: "Brainstorm"
+      file_pattern: "BRAINSTORM_*.md"
+      cascade_to: "Define"
+    - phase: "Define"
+      file_pattern: "DEFINE_*.md"
+      cascade_to: "Design"
+    - phase: "Design"
+      file_pattern: "DESIGN_*.md"
+      cascade_to: "Code"
+
+  process:
+    steps:
+      - name: "Load Target Document"
+        description: "Read target file and identify document type (BRAINSTORM/DEFINE/DESIGN)"
+      - name: "Analyze Change"
+        description: "Classify change type and assess impact level"
+      - name: "Apply Changes"
+        description: "Make change, bump version, add change note"
+      - name: "Assess Cascade Need"
+        description: "Determine if downstream documents need updates"
+      - name: "Execute Cascade"
+        description: "Prompt user and apply cascade updates if confirmed"
+      - name: "Save Updates"
+        description: "Write updated document(s)"
+      - name: "Contextual Guidance"
+        description: "Show what was updated and next step"
+
+  contextual_guidance:
+    show: "Updated document(s) with paths and next recommended action"
+
+  cascade_rules:
+    brainstorm_to_define:
+      - changed_approach: "DEFINE may need different problem focus"
+      - new_yagni_items: "Out of scope needs update"
+      - changed_users: "Target users section needs update"
+      - changed_constraints: "Constraints section needs update"
+      - new_discovery_answers: "May affect requirements"
+
+    define_to_design:
+      - new_requirement: "May need new component"
+      - changed_success_criteria: "May need different approach"
+      - scope_expansion: "Needs new sections"
+      - scope_reduction: "Can simplify"
+      - new_constraint: "Must be accommodated"
+
+    design_to_code:
+      - new_file: "Create file"
+      - removed_file: "Delete file"
+      - changed_pattern: "Update affected files"
+      - new_decision: "May need refactor"
+      - architecture_change: "Significant updates needed"
+
+  thresholds:
+    use_iterate: "< 30% change"
+    consider_new_define: "> 50% change"
+
+  version_tracking:
+    location: "Revision History section"
+    format:
+      - version
+      - date
+      - author
+      - changes
+
+# =============================================================================
+# FOLDER STRUCTURE
+# =============================================================================
+
+folder_structure:
+  root: ".claude/sdd/"
+
+  directories:
+    features:
+      path: "features/"
+      contains:
+        - "BRAINSTORM_*.md"
+        - "DEFINE_*.md"
+        - "DESIGN_*.md"
+
+    reports:
+      path: "reports/"
+      contains:
+        - "BUILD_REPORT_*.md"
+        - "REVIEW_REPORT_*.md"
+        - "DASHBOARD_*.md"
+
+    archive:
+      path: "archive/"
+      structure: "{FEATURE_NAME}/"
+      contains:
+        - "DEFINE_*.md"
+        - "DESIGN_*.md"
+        - "BUILD_REPORT_*.md"
+        - "REVIEW_REPORT_*.md"
+        - "DASHBOARD_*.md"
+        - "SHIPPED_*.md"
+        - "HISTORY_*.md"
+
+    templates:
+      path: "templates/"
+      contains:
+        - "BRAINSTORM_TEMPLATE.md"
+        - "DEFINE_TEMPLATE.md"
+        - "DESIGN_TEMPLATE.md"
+        - "BUILD_REPORT_TEMPLATE.md"
+        - "SHIPPED_TEMPLATE.md"
+        - "DASHBOARD_TEMPLATE.md"
+        - "REVIEW_REPORT_TEMPLATE.md"
+        - "HISTORY_TEMPLATE.md"
+
+    architecture:
+      path: "architecture/"
+      contains:
+        - "WORKFLOW_CONTRACTS.yaml"
+        - "ARCHITECTURE.md"
+
+# =============================================================================
+# NAMING CONVENTIONS
+# =============================================================================
+
+naming:
+  feature_name:
+    format: "SCREAMING_SNAKE_CASE"
+    examples:
+      - "USER_NOTIFICATIONS"
+      - "USER_AUTHENTICATION"
+      - "DATA_EXPORT"
+
+  files:
+    brainstorm: "BRAINSTORM_{FEATURE}.md"
+    define: "DEFINE_{FEATURE}.md"
+    design: "DESIGN_{FEATURE}.md"
+    build_report: "BUILD_REPORT_{FEATURE}.md"
+    review_report: "REVIEW_REPORT_{FEATURE}.md"
+    dashboard: "DASHBOARD_{FEATURE}.md"
+    history: "HISTORY_{FEATURE}.md"
+    shipped: "SHIPPED_{YYYY-MM-DD}.md"
+
+  date_format: "YYYY-MM-DD"
+
+# =============================================================================
+# AGENT FRONTMATTER STANDARD (v5.0)
+# =============================================================================
+
+agent_frontmatter:
+  description: "All agents must use YAML frontmatter for Claude Code feature compatibility"
+  required_fields:
+    - name
+    - description
+    - tools
+  optional_fields:
+    - model
+    - memory
+    - isolation
+    - background
+    - hooks
+    - color
+  new_in_v5:
+    memory:
+      values: ["project"]
+      description: "Persistent memory across sessions"
+    isolation:
+      values: ["worktree"]
+      description: "Run in isolated git worktree"
+    background:
+      values: [true, false]
+      description: "Run as background subagent"
+    hooks:
+      types: [PreToolUse, PostToolUse, Stop]
+      description: "Per-agent hooks for quality control and auto-save"
+
+# =============================================================================
+# DEV LOOP (Level 2) - team_size Extension
+# =============================================================================
+
+dev_loop:
+  version: "2.0"
+  description: "Dev Loop now supports team_size for parallel task execution"
+
+  prompt_config:
+    new_fields_v5:
+      team_size:
+        type: int
+        default: 0
+        description: "Number of parallel subagents for CORE tasks (0 = sequential)"
+      sandbox:
+        type: string
+        default: "none"
+        values: ["docker", "none"]
+        description: "Sandbox mode for AFK execution"
+
+  team_size_behavior:
+    risky_tasks: "Always sequential (fail fast)"
+    core_tasks:
+      with_team_size_0: "Sequential execution"
+      with_team_size_N: "Batch into N groups, each group assigned to a subagent"
+    polish_tasks: "Always sequential (cleanup)"
+
+  progress_tracking:
+    description: "PROGRESS.md tracks all subagents and their tasks"
+    fields:
+      - agent_id
+      - assigned_tasks
+      - completed_tasks
+      - status
+
+# =============================================================================
+# STATUS TRANSITIONS (CRITICAL: Prevents stale document statuses)
+# =============================================================================
+
+status_transitions:
+  description: |
+    Each phase MUST update document statuses when completing.
+    This prevents stale "Ready for X" statuses after phase completion.
+
+  brainstorm:
+    initial: "Exploring"
+    in_progress: "Approaches Identified"
+    ready: "Ready for Define"
+    after_define: "Complete (Defined)"
+
+  define:
+    initial: "Draft"
+    in_progress: "In Progress"
+    needs_work: "Needs Clarification"
+    ready: "Ready for Design"
+    after_design: "Complete (Designed)"
+    after_build: "Complete (Built)"
+    after_ship: "Shipped"
+
+  design:
+    initial: "Draft"
+    in_progress: "In Progress"
+    ready: "Ready for Build"
+    after_build: "Complete (Built)"
+    after_ship: "Shipped"
+
+  build_report:
+    initial: "In Progress"
+    complete: "Complete"
+    after_ship: "Shipped"
+
+  update_rules:
+    - trigger: "/define completes (with brainstorm input)"
+      updates:
+        - file: "BRAINSTORM_{FEATURE}.md"
+          field: "Status"
+          value: "Complete (Defined)"
+
+    - trigger: "/design completes"
+      updates:
+        - file: "DEFINE_{FEATURE}.md"
+          field: "Status"
+          value: "Complete (Designed)"
+        - file: "DEFINE_{FEATURE}.md"
+          field: "Next Step"
+          value: "/build"
+
+    - trigger: "/build completes"
+      updates:
+        - file: "DEFINE_{FEATURE}.md"
+          field: "Status"
+          value: "Complete (Built)"
+        - file: "DESIGN_{FEATURE}.md"
+          field: "Status"
+          value: "Complete (Built)"
+        - file: "DEFINE_{FEATURE}.md"
+          field: "Next Step"
+          value: "/ship"
+        - file: "DESIGN_{FEATURE}.md"
+          field: "Next Step"
+          value: "/ship"
+
+    - trigger: "/ship completes"
+      updates:
+        - file: "DEFINE_{FEATURE}.md"
+          field: "Status"
+          value: "Shipped"
+        - file: "DESIGN_{FEATURE}.md"
+          field: "Status"
+          value: "Shipped"
+        - file: "BUILD_REPORT_{FEATURE}.md"
+          field: "Status"
+          value: "Shipped"
+
+  agent_responsibility:
+    - "Each agent MUST update upstream document statuses before completing"
+    - "design-agent: Update DEFINE status to 'Complete (Designed)'"
+    - "build-agent: Update DEFINE and DESIGN status to 'Complete (Built)'"
+    - "ship-agent: Update all documents to 'Shipped'"
+
+# =============================================================================
+# QUALITY STANDARDS
+# =============================================================================
+
+quality:
+  code:
+    - no_inline_comments
+    - type_hints_required
+    - self_documenting_names
+    - config_in_yaml_not_code
+    - self_contained_units
+
+  documentation:
+    - clear_headings
+    - tables_for_structured_data
+    - ascii_diagrams_for_architecture
+    - version_history_maintained
+
+  process:
+    - phase_gates_enforced
+    - all_artifacts_linked
+    - changes_via_iterate
+    - lessons_captured
+    - contextual_guidance_shown
+
+# =============================================================================
+# SCORING REFERENCE
+# =============================================================================
+
+scoring:
+  agentspec_4_2:
+    ease_of_use: 4
+    delivery_speed: 5
+    output_quality: 9
+    traceability: 10
+    parallelism: 2
+    recovery: 7
+    cost_benefit: 6
+    scalability: 7
+    knowledge_accumulation: 9
+    flexibility: 5
+    average: 6.4
+
+  agentspec_5_0:
+    ease_of_use: 8
+    delivery_speed: 9
+    output_quality: 10
+    traceability: 10
+    parallelism: 9
+    recovery: 10
+    cost_benefit: 7
+    scalability: 9
+    knowledge_accumulation: 10
+    flexibility: 8
+    average: 9.0
+
+# =============================================================================
+# VERSION HISTORY
+# =============================================================================
+
+version_history:
+  - version: "5.0.0"
+    date: "2026-02-25"
+    changes:
+      - "Parallel /build via git worktrees with work group decomposition"
+      - "Plan Mode required for all build subagents"
+      - "Parallel /design via background research subagents"
+      - "Auto-review (code-reviewer) after every /build"
+      - "Contextual guidance at end of every phase"
+      - "Dev Loop team_size for parallel CORE task execution"
+      - "DASHBOARD_{FEATURE}.md for real-time build progress"
+      - "Memory persistent per agent (memory: project frontmatter)"
+      - "Hooks per subagent (PreToolUse, PostToolUse, Stop)"
+      - "Docker sandbox for /build AFK mode"
+      - "Cache incremental verification (git diff based)"
+      - "Auto /generate-diagrams before /ship"
+      - "HISTORY_{FEATURE}.md with timestamps for all artifacts"
+      - "Auto-save via Stop hook before context compaction"
+      - "Didactic BUILD_REPORT (what, why, how per file)"
+      - "Agent frontmatter standardized across all 46 agents"
+      - "REVIEW_REPORT_TEMPLATE.md and DASHBOARD_TEMPLATE.md and HISTORY_TEMPLATE.md"
+      - "sandbox field in Dev Loop PROMPT_TEMPLATE.md"
+
+  - version: "4.2.0"
+    date: "2026-01-29"
+    changes:
+      - "Added Agent Matching (Design) + Agent Delegation (Build)"
+
+  - version: "4.1.2"
+    date: "2026-01-28"
+    changes:
+      - "Added Sample Collection step to /brainstorm phase"
+
+  - version: "4.1.1"
+    date: "2026-01-27"
+    changes:
+      - "Added Priority classification (MoSCoW) to Goals section"
+      - "Added Assumptions section as trackable risk register"
+
+  - version: "4.1.0"
+    date: "2026-01-27"
+    changes:
+      - "Added Phase 0: /brainstorm (optional exploratory phase)"
+      - "One-question-at-a-time dialogue pattern"
+      - "2-3 approaches with trade-offs exploration"
+      - "YAGNI enforcement with feature removal tracking"
+      - "Incremental validation (200-300 word sections)"
+
+  - version: "4.0.0"
+    date: "2026-01-25"
+    changes:
+      - "Complete rewrite: 8 phases → 4 phases"
+      - "Merged Intake + PRD + Refine → Define"
+      - "Merged Plan + Spec + ADRs → Design"
+      - "Merged Tasks + Execute → Build"
+      - "Simplified Archive → Ship"
+      - "Added /iterate for cross-phase updates"
+      - "Inline ADRs instead of separate files"

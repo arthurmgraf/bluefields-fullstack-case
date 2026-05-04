@@ -1,0 +1,128 @@
+# Execution Log: PROMPT_CODEMAP_GRAPHICS
+
+> Generated: 2026-02-25T00:10:00Z
+
+---
+
+## Execution Summary
+
+| Metric | Value |
+|--------|-------|
+| **PROMPT** | `.claude/dev/tasks/PROMPT_CODEMAP_GRAPHICS.md` |
+| **Started** | 2026-02-25T00:00:00Z |
+| **Completed** | 2026-02-25T00:10:00Z |
+| **Duration** | 00:10:00 |
+| **Exit Reason** | EXIT_COMPLETE |
+| **Quality Tier** | production |
+| **Mode** | afk |
+
+---
+
+## Task Execution
+
+| # | Priority | Task | Status | Attempts | Verification |
+|---|----------|------|--------|----------|--------------|
+| 1 | RISKY | Apply devicePixelRatio fix in HabboRoom.tsx | PASS | 1 | `node -e "..."` -> 0 |
+| 2 | CORE | Remove pixelated CSS and verify canvas style | PASS | 1 | `node -e "..."` -> 0 |
+| 3 | CORE | Increase font sizes in drawing/agent.ts | PASS | 1 | `node -e "..."` -> 0 |
+| 4 | CORE | Increase font sizes in drawing/furniture.ts | PASS | 1 | `node -e "..."` -> 0 |
+| 5 | POLISH | Final integration verification | PASS | 1 | 9/9 checks -> 0 |
+| 6 | POLISH | Verify TypeScript still compiles | PASS | 1 | `npx tsc --noEmit` -> 0 |
+
+---
+
+## Exit Criteria
+
+| Criterion | Met | Verification |
+|-----------|-----|--------------|
+| canvas.width/height set with DPR | PASS | node check -> exit 0 |
+| canvas.style.width/height set | PASS | node check -> exit 0 |
+| ctx.setTransform(dpr,...) in render | PASS | node check -> exit 0 |
+| ctx.imageSmoothingEnabled = false | PASS | node check -> exit 0 |
+| All render-loop canvas.width/height -> logicalW/logicalH | PASS | node check -> exit 0 |
+| Event handler coordinate math unchanged | PASS | manual inspection |
+| imageRendering: 'pixelated' removed | PASS | node check -> exit 0 |
+| Font sizes increased in agent.ts | PASS | node check -> exit 0 |
+| Font sizes increased in furniture.ts | PASS | node check -> exit 0 |
+| Text measurement font matches draw font | PASS | code review |
+| TypeScript compiles without errors | PASS | tsc --noEmit -> exit 0 |
+| No changes to server files, hooks, WebSocket | PASS | only 3 client files modified |
+| No changes to tiles.ts, room.ts, decorations.ts | PASS | not touched |
+| Agent movement coordinates unchanged | PASS | not touched |
+
+---
+
+## Key Decisions Made
+
+1. **Iteration 1**: Used `ctx.setTransform(dpr, 0, 0, dpr, 0, 0)` at top of render frame (not ctx.save/scale) to avoid transform accumulation across frames.
+2. **Iteration 1**: Created `logicalW = canvas.width / dpr` and `logicalH = canvas.height / dpr` for all render-loop centering math. Event handlers (handleWheel, handleClick) kept original `canvas.width / 2` since those use CSS coordinates from `getBoundingClientRect()`.
+3. **Iteration 2**: Changed `imageRendering: 'pixelated'` to `imageRendering: 'auto'` — after DPR fix the canvas buffer is at native resolution so nearest-neighbor scaling is no longer needed.
+4. **Iteration 3**: Speech bubble font size changes applied to BOTH measurement (ctx.measureText) and draw (ctx.fillText) calls to prevent bubble size regression.
+
+---
+
+## Files Created/Modified
+
+| File | Action | Iteration |
+|------|--------|-----------|
+| `codemap-tool/client/src/components/HabboRoom.tsx` | Modified | 1, 2 |
+| `codemap-tool/client/src/drawing/agent.ts` | Modified | 3 |
+| `codemap-tool/client/src/drawing/furniture.ts` | Modified | 4 |
+| `.claude/dev/progress/PROGRESS_CODEMAP_GRAPHICS.md` | Created | 1 |
+| `.claude/dev/logs/LOG_CODEMAP_GRAPHICS_20260225_000000.md` | Created | 6 |
+
+---
+
+## Statistics
+
+```text
+Total Tasks:     6
+  Passed:      6 (100%)
+  Failed:      0 (0%)
+  Skipped:     0 (0%)
+
+Total Iterations: 6
+Retries Used:     0
+Circuit Breaker:  0/3
+```
+
+---
+
+## Changes Summary
+
+### HabboRoom.tsx (Primary fix)
+
+- After `getContext`: added `ctx.imageSmoothingEnabled = false`
+- `resize()` function: now sets `canvas.width/height = window.innerWidth/Height * dpr` and `canvas.style.width/height = window.innerWidth/Height + 'px'`
+- `render()` function top: added `const dpr`, `const logicalW`, `const logicalH`, `ctx.setTransform(dpr,0,0,dpr,0,0)`
+- All `canvas.width/canvas.height` inside render loop -> `logicalW/logicalH` (fillRect, centering, tracking banner)
+- Canvas JSX style: `imageRendering: 'pixelated'` -> `imageRendering: 'auto'`
+
+### agent.ts (Font sizes)
+
+- Name label: `bold 10px` -> `bold 12px`
+- Model label: `8px` -> `9px`
+- Status badge icon: `bold 10px sans-serif` -> `bold 11px sans-serif`
+- ZZZ animation base size: `8 + offset*2` -> `10 + offset*2`
+- Speech bubble primary (measure + draw): `bold 10px` -> `bold 11px`
+- Speech bubble secondary (measure + draw): `9px` -> `10px`
+
+### furniture.ts (Font sizes)
+
+- `drawLabel`: `9px` -> `10px`, vertical offset `py+10` -> `py+11`
+- `drawRoomSign`: `bold 10px` -> `bold 11px`, vertical offset `py+13` -> `py+14`
+
+---
+
+## Recovery Information
+
+To resume this session:
+```bash
+/dev tasks/PROMPT_CODEMAP_GRAPHICS.md --resume
+```
+
+Progress file: `.claude/dev/progress/PROGRESS_CODEMAP_GRAPHICS.md`
+
+---
+
+*Log generated by Dev Loop Executor v1.1*

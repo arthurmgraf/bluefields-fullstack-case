@@ -1,0 +1,103 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(git checkout:*)",
+      "Bash(tree:*)",
+      "Bash(ls:*)",
+      "mcp__brave-search__brave_web_search",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_close",
+      "mcp__playwright__browser_type",
+      "Bash(C:\\Users\\Flavio Graf\\Documents\\Estudos_Arthur\\annotations-and-studies-main\\template_claude_code\\codemap-tool\\hooks\\file-activity-hook.sh read:*)",
+      "Bash(C:\\Users\\Flavio Graf\\Documents\\Estudos_Arthur\\annotations-and-studies-main\\template_claude_code\\codemap-tool\\hooks\\file-activity-hook.sh write:*)",
+      "Bash(C:\\Users\\Flavio Graf\\Documents\\Estudos_Arthur\\annotations-and-studies-main\\template_claude_code\\codemap-tool\\hooks\\thinking-hook.sh thinking-start:*)",
+      "Bash(C:\\Users\\Flavio Graf\\Documents\\Estudos_Arthur\\annotations-and-studies-main\\template_claude_code\\codemap-tool\\hooks\\thinking-hook.sh thinking-end:*)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "context7",
+    "sequential-thinking",
+    "memory",
+    "fetch",
+    "playwright",
+    "github",
+    "brave-search"
+  ],
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash codemap-tool/hooks/file-activity-hook.sh read-start"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash codemap-tool/hooks/file-activity-hook.sh write-start"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash codemap-tool/hooks/thinking-hook.sh thinking-end"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash codemap-tool/hooks/file-activity-hook.sh read-end"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash codemap-tool/hooks/file-activity-hook.sh write-end"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash codemap-tool/hooks/thinking-hook.sh thinking-start"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash codemap-tool/hooks/thinking-hook.sh thinking-end"
+          }
+        ]
+      }
+    ]
+  }
+}

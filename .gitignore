@@ -1,0 +1,32 @@
+# codemap-tool is a separate public repo (JamsusMaximus/codemap). Referenced via URL.
+codemap-tool/
+
+# Claude Code template's own git history (we want the .claude *content*, not its git)
+.claude/.git/
+
+# Node / Next.js (for when bluefields-tracker is created)
+node_modules/
+.next/
+.vercel/
+.turbo/
+dist/
+build/
+
+# Env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# IDE / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
