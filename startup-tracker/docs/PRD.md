@@ -127,3 +127,12 @@ A single authenticated web app where any team member can:
 - **Free tier only**: Vercel Hobby + Supabase Free
 - **Time budget**: 6h hard wall-clock for the original build
 - **No service-role key** in the app — anon key + RLS only
+
+---
+
+## 10. Diagrams
+
+See [`../diagrams/`](../diagrams/) for three Excalidraw diagrams:
+- `architecture.excalidraw` — System overview (Browser → Vercel/Next.js → Supabase)
+- `data-flow.excalidraw` — Read flow, write flow, auth flow on one canvas
+- `data-model.excalidraw` — ER schema with FKs and an annotated RLS summary

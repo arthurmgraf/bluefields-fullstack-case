@@ -5,7 +5,7 @@
 
 A portfolio-tracking MVP for accelerators and venture studios. Single source of truth for startup status, risk, and updates — replacing the "WhatsApp + email + Notion" sprawl most early-stage investors actually use.
 
-![Screenshot placeholder](docs/screenshot.png)
+> **Diagrams:** see [`diagrams/`](diagrams/) — architecture, data-flow, and data-model in Excalidraw format.
 
 ---
 
@@ -120,8 +120,9 @@ startup-tracker/
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System diagram, key decisions, data flow, security model |
 | [`docs/AI_USAGE.md`](docs/AI_USAGE.md) | The honest AI workflow log: prompts used, what AI got wrong, how it was caught |
 | [`docs/EXECUTION_PLAN.md`](docs/EXECUTION_PLAN.md) | Hour-by-hour build log + retrospective |
+| [`diagrams/`](diagrams/) | 3 Excalidraw diagrams (architecture · data-flow · data-model) |
 | [`TODO.md`](TODO.md) | Honest list of what's deferred and why |
-| [`.claude/skills/code-review.md`](.claude/skills/code-review.md) | Reusable Claude Code skill for AI-assisted code review |
+| [`.claude/skills/code-review/SKILL.md`](.claude/skills/code-review/SKILL.md) | Reusable Claude Code skill for AI-assisted code review |
 
 ---
 

@@ -94,7 +94,7 @@ Step 4 is the part most people skip. It is the part that matters.
 
 ## Reusable artifacts from this build
 
-- **Code-review skill** at [`.claude/skills/code-review.md`](../.claude/skills/code-review.md) — drop-in Claude Code skill for AI-assisted review with severity ratings + OWASP mapping. Generic, project-agnostic.
+- **Code-review skill** at [`.claude/skills/code-review/SKILL.md`](../.claude/skills/code-review/SKILL.md) — drop-in Claude Code skill for AI-assisted review with severity ratings + OWASP mapping. Generic, project-agnostic.
 - **The SDD chain** (BRAINSTORM → DEFINE → DESIGN) lives in `.claude/sdd/features/` of the parent submission. Reusable as a template for any AI-assisted MVP build.
 
 ---
