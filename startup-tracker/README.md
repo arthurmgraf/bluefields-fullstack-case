@@ -41,14 +41,114 @@ Construído com Next.js 14, Supabase (Postgres + RLS) e guardrails forçados por
 
 ## Diagramas
 
-### 1. Arquitetura do Sistema
-![Arquitetura do Sistema](./diagrams/architecture.png)
+Renderizados nativamente pelo GitHub. Versão técnica em Excalidraw em [`./diagrams/`](./diagrams/).
 
-### 2. Fluxo de Dados
-![Fluxo de Dados](./diagrams/data-flow.png)
+### 1. Arquitetura — visão geral
 
-### 3. Modelo de Entidade Relacionamento (ER)
-![Modelo de Dados](./diagrams/data-model.png)
+```mermaid
+flowchart LR
+    U([👤 <b>Usuário</b><br/>navegador])
+
+    subgraph Vercel["▲ Vercel — onde a aplicação roda"]
+        direction TB
+        N["⚡ <b>Next.js 14</b><br/>páginas + formulários<br/><i>renderizados no servidor</i>"]
+        Z["🛡️ <b>Zod</b><br/>confere todo dado"]
+    end
+
+    subgraph Supa["🟢 Supabase — backend pronto"]
+        direction TB
+        A["🔐 <b>Autenticação</b><br/>Magic Link / Senha"]
+        DB[("🐘 <b>PostgreSQL</b><br/>+ Row Level Security")]
+    end
+
+    U <==>|HTTPS| N
+    N --> Z
+    Z ==>|grava| DB
+    N ==>|lê| DB
+    N <-.->|login| A
+    A -.->|sessão| U
+
+    classDef user fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef edge fill:#fff8e1,stroke:#f57f17,stroke-width:2px,color:#3e2723
+    classDef back fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    class U user
+    class N,Z edge
+    class A,DB back
+```
+
+### 2. Fluxo de dados — três cenários reais
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as 👤 Usuário
+    participant N as ⚡ Next.js
+    participant Z as 🛡️ Zod
+    participant A as 🔐 Supabase Auth
+    participant DB as 🐘 PostgreSQL
+
+    rect rgb(232, 245, 233)
+    Note over U,DB: ① Login com Magic Link
+    U->>N: Digita e-mail no /login
+    N->>A: Pede magic link
+    A-->>U: E-mail com link único
+    U->>N: Clica no link
+    N->>A: Troca código por sessão
+    A-->>U: Cookie de sessão (JWT)
+    end
+
+    rect rgb(227, 242, 253)
+    Note over U,DB: ② Ver dashboard
+    U->>N: Acessa "/"
+    N->>DB: Pede lista de startups
+    DB-->>N: Devolve só o permitido (RLS)
+    N-->>U: HTML pronto
+    end
+
+    rect rgb(255, 235, 238)
+    Note over U,DB: ③ Adicionar atualização
+    U->>N: Envia formulário
+    N->>Z: Valida cada campo
+    Z-->>N: ✅ OK
+    N->>DB: Grava update + atualiza risco
+    DB-->>N: Sucesso (RLS conferiu autor)
+    N-->>U: Redireciona com dados frescos
+    end
+```
+
+### 3. Modelo de dados — o que é guardado
+
+```mermaid
+erDiagram
+    PROFILES ||--o{ STARTUPS : "🎯 lidera"
+    PROFILES ||--o{ STARTUP_UPDATES : "✍️ escreve"
+    STARTUPS ||--o{ STARTUP_UPDATES : "📋 recebe"
+
+    PROFILES {
+        uuid id PK
+        text full_name "Nome completo"
+        text email "E-mail de trabalho"
+    }
+    STARTUPS {
+        uuid id PK
+        text name "Nome da startup"
+        text segment "Segmento"
+        enum phase "Ideação → Escala"
+        enum risk_level "🟢 / 🟡 / 🔴"
+        uuid responsible_id FK "Líder Bluefields"
+        timestamp updated_at "Última atualização"
+    }
+    STARTUP_UPDATES {
+        uuid id PK
+        uuid startup_id FK
+        uuid author_id FK
+        text content "Progresso"
+        text blockers "Impedimentos"
+        text next_steps "Próximos passos"
+        enum risk_level "Risco no momento"
+        timestamp created_at "Quando"
+    }
+```
 
 ---
 
