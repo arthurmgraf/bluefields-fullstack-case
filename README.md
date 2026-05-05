@@ -1,181 +1,181 @@
 # Startup Tracker — Bluefields AI-First MVP
 
-![CI](https://img.shields.io/badge/CI-passed-brightgreen)
+![CI](https://img.shields.io/badge/CI-passou-brightgreen)
 ![Next.js](https://img.shields.io/badge/next.js-14-black)
 ![Supabase](https://img.shields.io/badge/Supabase-Auth--DB-green)
-![Vercel Cost](https://img.shields.io/badge/Vercel%20cost-%240.00%2Fmo-brightgreen)
+![Vercel Cost](https://img.shields.io/badge/Vercel%20cost-R%240.00%2Fm%C3%AAs-brightgreen)
 
-Professional portfolio tracking platform for accelerators and venture studios. Unified source of truth for startup status, risk, and updates — eliminating information silos across WhatsApp, email, and disparate Notion pages.
+Plataforma profissional de acompanhamento de portfólio para aceleradoras e venture studios. Fonte única da verdade para status, risco e atualizações de startups — eliminando silos de informação espalhados em WhatsApp, e-mail e páginas de Notion.
 
-Built as a technical case for **Bluefields**, following a strict AI-First development workflow.
+Construído como um case técnico para a **Bluefields**, seguindo um fluxo de trabalho rigoroso de desenvolvimento AI-First.
 
 ---
 
-## Key Metrics
+## Métricas Chave
 
-| Metric | Value |
+| Métrica | Valor |
 |---|---|
-| Monthly Cost | **$0.00** (Vercel Hobby + Supabase Free) |
-| Interaction Latency | < 1s (Next.js Server Actions) |
-| Type Safety | **100%** (Strict TypeScript + Zod) |
-| Security Model | Row Level Security (RLS) forced at DB layer |
-| AI-Generated Code | **~85%** (Claude Code + Human-in-the-loop review) |
-| Data Integrity | ACID compliant Postgres + Zod validation |
+| Custo Mensal | **R$ 0,00** (Vercel Hobby + Supabase Free) |
+| Latência de Interação | < 1s (Next.js Server Actions) |
+| Segurança de Tipos | **100%** (TypeScript Estrito + Zod) |
+| Modelo de Segurança | Row Level Security (RLS) forçado na camada de DB |
+| Código Gerado por IA | **~85%** (Claude Code + Revisão humana constante) |
+| Integridade de Dados | Postgres ACID + Validação Zod |
 
 ---
 
-## Architecture
+## Arquitetura
 
 ```
-USER (Browser)  ──HTTPS──>  Vercel Edge (Next.js 14)  ──Server Action──>  Supabase (Postgres)
+USUÁRIO (Browser)  ──HTTPS──>  Vercel Edge (Next.js 14)  ──Server Action──>  Supabase (Postgres)
                                      |                                         |
-                                Middleware                                  RLS Policy
-                             (Session Gate)                              (Auth Boundary)
+                                Middleware                                  Política RLS
+                            (Filtro de Sessão)                          (Barreira de Auth)
 ```
 
-### Technology Stack
+### Stack Tecnológica
 
-| Layer | Technology | Purpose |
+| Camada | Tecnologia | Propósito |
 |---|---|---|
-| **Frontend** | Next.js 14 (App Router) | React Server Components for zero-bundle reads |
-| **Styling** | Tailwind CSS + Shadcn/UI | Premium design system with Bluefields branding |
-| **Auth** | Supabase Auth (Magic Link) | Passwordless, enterprise-grade authentication |
-| **Database** | Supabase Postgres | Relational storage with RLS and automated triggers |
-| **Validation** | Zod | Runtime guardrails at every Server Action boundary |
-| **Deployment** | Vercel Edge | Global distribution with minimal latency |
+| **Frontend** | Next.js 14 (App Router) | React Server Components para leitura rápida e SEO |
+| **Estilização** | Tailwind CSS + Shadcn/UI | Sistema de design premium com branding Bluefields |
+| **Autenticação** | Supabase Auth (Magic Link) | Login sem senha, seguro e de nível enterprise |
+| **Banco de Dados** | Supabase Postgres | Armazenamento relacional com RLS e triggers |
+| **Validação** | Zod | Guardrails em tempo de execução em todas as Server Actions |
+| **Deploy** | Vercel Edge | Distribuição global com latência mínima |
 
-### Key Design Decisions
+### Decisões de Design Chave
 
-| Decision | Choice | Why |
+| Decisão | Escolha | Por que? |
 |---|---|---|
-| Data Fetching | RSC (Server Components) | Zero client-side JS for initial render, faster FCP |
-| Security | RLS-only | Security enforced at DB layer; app key secrecy is secondary |
-| State Management | URL-driven + Server Actions | Minimal client state, native form behavior, SEO friendly |
-| Auth Pattern | Magic Link | Reduces friction for portfolio managers; high security |
-| UX | Shadcn/UI | Accessible, premium-feel components with custom Bluefields theme |
+| Busca de Dados | RSC (Server Components) | Zero JS no cliente para o render inicial, FCP mais rápido |
+| Segurança | RLS-only | Segurança garantida no banco; sigilo da chave do app é secundário |
+| Gestão de Estado | URL-driven + Actions | Estado mínimo no cliente, comportamento nativo de forms |
+| Padrão de Auth | Magic Link | Reduz atrito para gestores de portfólio; alta segurança |
+| UX | Shadcn/UI | Componentes acessíveis e premium com tema customizado |
 
 ---
 
-## AI-First Methodology
+## Metodologia AI-First
 
-This project was built using a strict AI-Human partnership model, leveraging advanced orchestration patterns to ensure high-quality engineering.
+Este projeto foi construído usando um modelo estrito de parceria IA-Humano, utilizando padrões avançados de orquestração para garantir engenharia de alta qualidade.
 
-| Component | Method | Impact |
+| Componente | Método | Impacto |
 |---|---|---|
-| **SDD Workflow** | Spec-Driven Development | **Design-First approach.** Features are brainstormed, defined, and designed in `.claude/sdd/` before a single line of code is written. |
-| **Diagram Agent** | Automated Visualization | **Self-documenting architecture.** A specialized agent analyzes the codebase to generate and sync professional Excalidraw diagrams automatically. |
-| **Zod Guardrails** | AI Safety | **Zero-trust boundary.** Automated runtime validation at every entry point to prevent AI-generated logic drift. |
+| **Workflow SDD** | Spec-Driven Development | **Abordagem Design-First.** Funcionalidades são desenhadas em `.claude/sdd/` antes de qualquer linha de código. |
+| **Diagram Agent** | Visualização Automática | **Documentação viva.** Um agente especializado analisa o código para gerar e sincronizar diagramas Excalidraw automaticamente. |
+| **Guardrails Zod** | Segurança de IA | **Barreira de confiança zero.** Validação automática em cada entrada para evitar "alucinações" de lógica da IA. |
 
 ---
 
-## Data Model
+## Modelo de Dados
 
-### Relational Schema
+### Esquema Relacional
 
 ```
-                     profiles (Users)
+                     profiles (Usuários)
                         |
         author_id <── startup_updates ──> startup_id
                                               |
                                        responsible_id
 ```
 
-| Table | Purpose | Access Control (RLS) |
+| Tabela | Propósito | Controle de Acesso (RLS) |
 |---|---|---|
-| `profiles` | Stores user metadata and names | Authenticated users (Read/Self-Edit) |
-| `startups` | Core portfolio tracking (name, segment, risk) | Authenticated users (Read/Write) |
-| `startup_updates` | Append-only chronological status log | Author-only (Insert) |
+| `profiles` | Armazena metadados e nomes de usuários | Usuários Autenticados (Leitura/Edição Própria) |
+| `startups` | Core do acompanhamento (nome, fase, risco) | Usuários Autenticados (Leitura/Escrita) |
+| `startup_updates` | Log cronológico imutável de atualizações | Apenas o Autor (Inserção) |
 
 ---
 
-## Diagrams
+## Diagramas
 
-Technical visualizations of the system flows and security boundaries:
+Visualizações técnicas dos fluxos do sistema e barreiras de segurança:
 
-### 1. System Architecture
-High-level overview of the request flow and infrastructure.
-![System Architecture](./startup-tracker/diagrams/architecture.png)
+### 1. Arquitetura do Sistema
+Visão macro do fluxo de requisições e infraestrutura.
+![Arquitetura do Sistema](./startup-tracker/diagrams/architecture.png)
 
-### 2. Data Flow
-Detailed flows for Reads (RSC), Writes (Actions), and Auth (Magic Link).
-![Data Flow](./startup-tracker/diagrams/data-flow.png)
+### 2. Fluxo de Dados
+Fluxos detalhados para Leitura (RSC), Escrita (Actions) e Auth (Magic Link).
+![Fluxo de Dados](./startup-tracker/diagrams/data-flow.png)
 
-### 3. Entity Relationship (ER)
-Database schema with Foreign Keys and RLS policy annotations.
-![Data Model](./startup-tracker/diagrams/data-model.png)
+### 3. Modelo de Entidade Relacionamento (ER)
+Esquema do banco de dados com chaves estrangeiras e anotações de políticas RLS.
+![Modelo de Dados](./startup-tracker/diagrams/data-model.png)
 
 ---
 
-## Repository Structure
+## Estrutura do Repositório
 
 ```
 bluefields-fullstack-case/
-├── startup-tracker/               # Main Application Folder
-│   ├── src/                       # Next.js App Router (Pages & Actions)
-│   ├── components/                # UI Components (Bluefields Premium Theme)
-│   ├── lib/                       # Supabase & Zod Configurations
-│   ├── docs/                      # In-depth Technical Documentation
-│   │   ├── PRD.md                 # 1. Product Requirements Document
-│   │   ├── EXECUTION_PLAN.md      # 2. Strategic Execution Plan
-│   │   ├── AI_USAGE.md            # 4. AI Usage & Review Log ⭐
-│   │   └── ARCHITECTURE.md        # Technical Architecture Deep-dive
-│   ├── diagrams/                  # PNG Exports & Excalidraw Sources
-│   ├── scripts/                   # Operational & demo setup scripts
-│   └── .claude/skills/            # 5. Reusable AI-Assisted Review Skill
-└── .claude/sdd/                   # SDD Traceability (Brainstorm → Design)
+├── startup-tracker/               # Pasta Principal da Aplicação
+│   ├── src/                       # Next.js App Router (Páginas e Actions)
+│   ├── components/                # Componentes UI (Tema Bluefields Premium)
+│   ├── lib/                       # Configurações de Supabase e Zod
+│   ├── docs/                      # Documentação Técnica Detalhada
+│   │   ├── PRD.md                 # 1. Documento de Requisitos (PRD)
+│   │   ├── EXECUTION_PLAN.md      # 2. Plano Estratégico de Execução
+│   │   ├── AI_USAGE.md            # 4. Log de Uso e Revisão de IA ⭐
+│   │   └── ARCHITECTURE.md        # Deep-dive em Arquitetura Técnica
+│   ├── diagrams/                  # PNGs e Fontes do Excalidraw
+│   ├── scripts/                   # Scripts operacionais e de demo
+│   └── .claude/skills/            # 5. Skill Reutilizável de Revisão de Código
+└── .claude/sdd/                   # Rastreabilidade SDD (Brainstorm → Design)
 ```
 
 ---
 
-## Getting Started
+## Primeiros Passos
 
-### Prerequisites
+### Pré-requisitos
 
 - [Node.js 18+](https://nodejs.org)
-- [Supabase Account](https://supabase.com)
+- [Conta no Supabase](https://supabase.com)
 
-### Quick Setup
+### Configuração Rápida
 
 ```bash
-# 1. Clone and install
+# 1. Clonar e instalar
 git clone https://github.com/arthurmgraf/bluefields-fullstack-case.git
 cd bluefields-fullstack-case/startup-tracker
 npm install
 
-# 2. Environment Configuration
+# 2. Configuração de Ambiente
 cp .env.example .env.local
 
-# 3. Start Development
+# 3. Iniciar Desenvolvimento
 npm run dev
 ```
 
 ---
 
-## Cost Analysis
+## Análise de Custos
 
-| Service | Tier | Usage | Cost |
+| Serviço | Camada | Uso | Custo |
 |---|---|---|---|
-| **Vercel** | Hobby | App Hosting + Edge Functions | $0.00 |
-| **Supabase DB** | Free | 500MB Postgres | $0.00 |
-| **Supabase Auth** | Free | Up to 50k MAU | $0.00 |
+| **Vercel** | Hobby | Hospedagem App + Edge Functions | R$ 0,00 |
+| **Supabase DB** | Free | 500MB Postgres | R$ 0,00 |
+| **Supabase Auth** | Free | Até 50k MAU | R$ 0,00 |
 
-**Total: $0.00/month.** Leveraging permanent free tiers for zero-cost enterprise operations.
+**Total: R$ 0,00/mês.** Utilizando camadas gratuitas permanentes para operações de nível enterprise sem custo.
 
 ---
 
-## Case Deliverables Index
+## Índice de Entregáveis do Case
 
-| Deliverable | Location |
+| Entregável | Localização |
 |---|---|
 | **1. PRD** | [`docs/PRD.md`](startup-tracker/docs/PRD.md) |
-| **2. Execution Plan** | [`docs/EXECUTION_PLAN.md`](startup-tracker/docs/EXECUTION_PLAN.md) |
-| **3. Working MVP** | [Live Demo](https://bluefields-fullstack-case.vercel.app) |
-| **4. AI Usage Doc** | [`docs/AI_USAGE.md`](startup-tracker/docs/AI_USAGE.md) |
-| **5. Reusable Skill** | [`.claude/skills/code-review/SKILL.md`](startup-tracker/.claude/skills/code-review/SKILL.md) |
+| **2. Plano de Execução** | [`docs/EXECUTION_PLAN.md`](startup-tracker/docs/EXECUTION_PLAN.md) |
+| **3. MVP Funcional** | [Demo Ao Vivo](https://bluefields-fullstack-case.vercel.app) |
+| **4. Doc de Uso de IA** | [`docs/AI_USAGE.md`](startup-tracker/docs/AI_USAGE.md) |
+| **5. Skill Reutilizável** | [`.claude/skills/code-review/SKILL.md`](startup-tracker/.claude/skills/code-review/SKILL.md) |
 
 ---
 
-## Author
+## Autor
 
 **Arthur Maia Graf**
 

@@ -1,83 +1,83 @@
 # Startup Tracker 🚀
 
-Professional portfolio tracking platform for accelerators and venture studios. Unified source of truth for startup status, risk, and updates — eliminating information silos across WhatsApp, email, and disparate Notion pages.
+Plataforma profissional de acompanhamento de portfólio para aceleradoras e venture studios. Fonte única da verdade para status, risco e atualizações de startups — eliminando silos de informação espalhados em WhatsApp, e-mail e páginas de Notion.
 
-Built with Next.js 14, Supabase (Postgres + RLS), and Zod-enforced guardrails.
+Construído com Next.js 14, Supabase (Postgres + RLS) e guardrails forçados por Zod.
 
 ---
 
-## Key Metrics
+## Métricas Chave
 
-| Metric | Value |
+| Métrica | Valor |
 |---|---|
-| Monthly Cost | **$0.00** (Vercel Hobby + Supabase Free) |
-| Interaction Latency | < 1s (Next.js Server Actions) |
-| Type Safety | **100%** (Strict TypeScript + Zod) |
-| Security Model | Row Level Security (RLS) forced at DB layer |
+| Custo Mensal | **R$ 0,00** (Vercel Hobby + Supabase Free) |
+| Latência de Interação | < 1s (Next.js Server Actions) |
+| Segurança de Tipos | **100%** (TypeScript Estrito + Zod) |
+| Modelo de Segurança | Row Level Security (RLS) forçado na camada de DB |
 
 ---
 
-## Technology Stack
+## Metodologia AI-First
 
-| Layer | Technology | Purpose |
+| Componente | Método | Impacto |
 |---|---|---|
-| **Frontend** | Next.js 14 (App Router) | React Server Components for zero-bundle reads |
-| **Styling** | Tailwind CSS + Shadcn/UI | Premium design system with Bluefields branding |
-| **Auth** | Supabase Auth (Magic Link) | Passwordless, enterprise-grade authentication |
-| **Database** | Supabase Postgres | Relational storage with RLS and automated triggers |
-| **Validation** | Zod | Runtime guardrails at every Server Action boundary |
+| **Workflow SDD** | Spec-Driven Development | Abordagem Design-First (Brainstorm → Define → Design → Build). |
+| **Diagram Agent** | Visualização Automática | Análise do código para gerar diagramas Excalidraw profissionais. |
+| **Guardrails Zod** | Segurança de IA | Validação automática em runtime para evitar desvios de lógica. |
 
 ---
 
-## AI-First Methodology
+## Stack Tecnológica
 
-| Component | Method | Impact |
+| Camada | Tecnologia | Propósito |
 |---|---|---|
-| **SDD Workflow** | Spec-Driven Development | Design-First approach (Brainstorm → Define → Design → Build). |
-| **Diagram Agent** | Automated Visualization | Codebase analysis to generate professional Excalidraw diagrams. |
-| **Zod Guardrails** | AI Safety | Automated runtime validation to prevent logic drift. |
+| **Frontend** | Next.js 14 (App Router) | React Server Components para leitura ultra-rápida |
+| **Estilização** | Tailwind CSS + Shadcn/UI | Design system premium com branding Bluefields |
+| **Autenticação** | Supabase Auth (Magic Link) | Login seguro sem senha nível enterprise |
+| **Banco de Dados** | Supabase Postgres | Armazenamento relacional com RLS e triggers |
+| **Validação** | Zod | Guardrails em cada Server Action |
 
 ---
 
-## Diagrams
+## Diagramas
 
-### 1. System Architecture
-![System Architecture](./diagrams/architecture.png)
+### 1. Arquitetura do Sistema
+![Arquitetura do Sistema](./diagrams/architecture.png)
 
-### 2. Data Flow
-![Data Flow](./diagrams/data-flow.png)
+### 2. Fluxo de Dados
+![Fluxo de Dados](./diagrams/data-flow.png)
 
-### 3. Entity Relationship (ER)
-![Data Model](./diagrams/data-model.png)
+### 3. Modelo de Entidade Relacionamento (ER)
+![Modelo de Dados](./diagrams/data-model.png)
 
 ---
 
-## Getting Started
+## Primeiros Passos
 
 ```bash
-# 1. Install dependencies
+# 1. Instalar dependências
 npm install
 
-# 2. Environment Configuration
+# 2. Configuração de Ambiente
 cp .env.example .env.local
 
-# 3. Database Setup
-# Run the migration in your Supabase SQL Editor:
+# 3. Configuração do Banco
+# Execute a migração no SQL Editor do Supabase:
 # cat supabase/migrations/001_initial_schema.sql
 
-# 4. Start Development
+# 4. Iniciar Desenvolvimento
 npm run dev
 ```
 
 ---
 
-## Documentation
+## Documentação
 
-Detailed technical breakdown available in the `/docs` folder:
+Detalhamento técnico completo disponível na pasta `/docs`:
 
-| Document | Description |
+| Documento | Descrição |
 |---|---|
-| [PRD](docs/PRD.md) | Problem statement, user stories, and acceptance criteria. |
-| [Architecture](docs/ARCHITECTURE.md) | Security model, data flow, and tech stack rationale. |
-| [AI Usage](docs/AI_USAGE.md) | Log of the human-AI pair programming process. |
-| [Execution Plan](docs/EXECUTION_PLAN.md) | Timeline and retrospective. |
+| [PRD](docs/PRD.md) | Problema, histórias de usuário e critérios de aceitação. |
+| [Arquitetura](docs/ARCHITECTURE.md) | Modelo de segurança, fluxo de dados e stack técnica. |
+| [Uso de IA](docs/AI_USAGE.md) | Log do processo de pair programming humano-IA. |
+| [Plano de Execução](docs/EXECUTION_PLAN.md) | Cronograma e retrospectiva. |
