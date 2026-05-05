@@ -90,132 +90,19 @@ Este projeto foi construído usando um modelo estrito de parceria IA-Humano, uti
 
 ## Diagramas
 
-Os três diagramas abaixo respondem, nessa ordem, **"do que é feito?"**, **"como funciona em uso?"** e **"o que está guardado?"**. São renderizados nativamente pelo GitHub — basta rolar.
+Visualizações técnicas dos fluxos do sistema e barreiras de segurança:
 
-### 1. Arquitetura — visão geral
+### 1. Arquitetura do Sistema
+Visão macro do fluxo de requisições e infraestrutura.
+![Arquitetura do Sistema](./startup-tracker/diagrams/architecture.png)
 
-> Como as três camadas conversam: o usuário no navegador, a aplicação na Vercel e o backend no Supabase.
+### 2. Fluxo de Dados
+Fluxos detalhados para Leitura (RSC), Escrita (Actions) e Auth (Magic Link).
+![Fluxo de Dados](./startup-tracker/diagrams/data-flow.png)
 
-```mermaid
-flowchart LR
-    U([👤 <b>Usuário</b><br/>navegador])
-
-    subgraph Vercel["▲ Vercel — onde a aplicação roda"]
-        direction TB
-        N["⚡ <b>Next.js 14</b><br/>páginas + formulários<br/><i>renderizados no servidor</i>"]
-        Z["🛡️ <b>Zod</b><br/>confere todo dado<br/>antes de chegar no banco"]
-    end
-
-    subgraph Supa["🟢 Supabase — backend pronto"]
-        direction TB
-        A["🔐 <b>Autenticação</b><br/>Magic Link / Senha"]
-        DB[("🐘 <b>PostgreSQL</b><br/>+ Row Level Security<br/><i>banco filtra por usuário</i>")]
-    end
-
-    U <==>|HTTPS| N
-    N --> Z
-    Z ==>|grava| DB
-    N ==>|lê| DB
-    N <-.->|login / logout| A
-    A -.->|sessão| U
-
-    classDef user fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
-    classDef edge fill:#fff8e1,stroke:#f57f17,stroke-width:2px,color:#3e2723
-    classDef back fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
-    class U user
-    class N,Z edge
-    class A,DB back
-```
-
-**Por que essa forma:** o usuário nunca fala direto com o banco. Toda requisição passa por uma camada que valida (Zod) antes de gravar, e o próprio banco recusa qualquer query de quem não está autenticado (RLS). Quatro camadas independentes precisam falhar para um dado vazar.
-
----
-
-### 2. Fluxo de dados — três cenários reais
-
-> Os três usos principais do sistema, em ordem cronológica. Os retângulos coloridos separam cada cenário.
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor U as 👤 Usuário
-    participant N as ⚡ Next.js
-    participant Z as 🛡️ Zod
-    participant A as 🔐 Supabase Auth
-    participant DB as 🐘 PostgreSQL
-
-    rect rgb(232, 245, 233)
-    Note over U,DB: ① Login com Magic Link (sem senha)
-    U->>N: Digita e-mail no /login
-    N->>A: Pede magic link
-    A-->>U: E-mail com link único
-    U->>N: Clica no link
-    N->>A: Troca código por sessão
-    A-->>U: Cookie de sessão (JWT)
-    end
-
-    rect rgb(227, 242, 253)
-    Note over U,DB: ② Ver dashboard (apenas leitura)
-    U->>N: Acessa "/"
-    N->>DB: Pede lista de startups
-    DB-->>N: Devolve só o que o usuário pode ver (RLS)
-    N-->>U: HTML pronto (zero JS extra)
-    end
-
-    rect rgb(255, 235, 238)
-    Note over U,DB: ③ Adicionar atualização semanal
-    U->>N: Envia formulário (progresso/blockers/risco)
-    N->>Z: Valida cada campo
-    Z-->>N: ✅ OK
-    N->>DB: Grava update + atualiza risco da startup
-    DB-->>N: Sucesso (RLS conferiu autor)
-    N-->>U: Redireciona com dados frescos
-    end
-```
-
-**Leitura sem JavaScript no cliente** (cenário ②) e **validação dupla — Zod no servidor + RLS no banco** (cenário ③) são as duas decisões que mais reduzem superfície de bug e ataque.
-
----
-
-### 3. Modelo de dados — o que é guardado
-
-> Três tabelas. As setas mostram as relações: um perfil lidera várias startups, e cada startup recebe muitos updates.
-
-```mermaid
-erDiagram
-    PROFILES ||--o{ STARTUPS : "🎯 lidera"
-    PROFILES ||--o{ STARTUP_UPDATES : "✍️ escreve"
-    STARTUPS ||--o{ STARTUP_UPDATES : "📋 recebe"
-
-    PROFILES {
-        uuid id PK
-        text full_name "Nome completo"
-        text email "E-mail de trabalho"
-    }
-    STARTUPS {
-        uuid id PK
-        text name "Nome da startup"
-        text segment "Segmento (ex- Fintech)"
-        enum phase "Ideação → Escala"
-        enum risk_level "🟢 verde / 🟡 amarelo / 🔴 vermelho"
-        uuid responsible_id FK "Líder Bluefields"
-        timestamp updated_at "Última atualização"
-    }
-    STARTUP_UPDATES {
-        uuid id PK
-        uuid startup_id FK
-        uuid author_id FK
-        text content "Progresso da semana"
-        text blockers "Impedimentos"
-        text next_steps "Próximos passos"
-        enum risk_level "Risco no momento"
-        timestamp created_at "Quando"
-    }
-```
-
-**Imutabilidade por design:** updates são *append-only* — não há editar/apagar. O risco da startup é um espelho do último update; assim, o histórico cronológico nunca diverge do estado atual.
-
-> Para versão técnica detalhada (com cores de RLS, fronteiras de segurança e bindings de seta), abra os arquivos `.excalidraw` em [`startup-tracker/diagrams/`](./startup-tracker/diagrams/) no [excalidraw.com](https://excalidraw.com).
+### 3. Modelo de Entidade Relacionamento (ER)
+Esquema do banco de dados com chaves estrangeiras e anotações de políticas RLS.
+![Modelo de Dados](./startup-tracker/diagrams/data-model.png)
 
 ---
 
