@@ -165,13 +165,16 @@ npm run dev
 
 ## Índice de Entregáveis do Case
 
-| Entregável | Localização |
-|---|---|
-| **1. PRD** | [`docs/PRD.md`](startup-tracker/docs/PRD.md) |
-| **2. Plano de Execução** | [`docs/EXECUTION_PLAN.md`](startup-tracker/docs/EXECUTION_PLAN.md) |
-| **3. MVP Funcional** | [Demo Ao Vivo](https://bluefields-fullstack-case.vercel.app) |
-| **4. Doc de Uso de IA** | [`docs/AI_USAGE.md`](startup-tracker/docs/AI_USAGE.md) |
-| **5. Skill Reutilizável** | [`.claude/skills/code-review/SKILL.md`](startup-tracker/.claude/skills/code-review/SKILL.md) |
+| # | Entregável (case Bluefields) | Localização |
+|---|---|---|
+| 1 | **PRD** | [`docs/PRD.md`](startup-tracker/docs/PRD.md) |
+| 2 | **AI-Plan** (decomposição + plano + uso de IA) | [`docs/AI-PLAN.md`](startup-tracker/docs/AI-PLAN.md) → consolida [`EXECUTION_PLAN.md`](startup-tracker/docs/EXECUTION_PLAN.md) + [`AI_USAGE.md`](startup-tracker/docs/AI_USAGE.md) |
+| 3 | **Repositório** (frontend + backend + setup) | [`startup-tracker/`](startup-tracker/) |
+| 4 | **Deploy público** | [Demo Ao Vivo](https://bluefields-fullstack-case.vercel.app) |
+| 5 | **Architecture** | [`docs/ARCHITECTURE.md`](startup-tracker/docs/ARCHITECTURE.md) |
+| 6 | **Quality Review Skill** | [`docs/QUALITY-REVIEW-SKILL.md`](startup-tracker/docs/QUALITY-REVIEW-SKILL.md) → arquivo canônico em [`.claude/skills/code-review/SKILL.md`](startup-tracker/.claude/skills/code-review/SKILL.md) |
+| 7 | **Review (auto-avaliação)** | [`docs/REVIEW.md`](startup-tracker/docs/REVIEW.md) |
+| 8 | **Loom video (bônus)** | _Não entregue_ |
 
 ---
 

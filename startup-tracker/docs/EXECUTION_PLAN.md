@@ -35,31 +35,42 @@
 
 ---
 
-## Realizado (preenchido durante a build)
+## Realizado (preenchido ao final do build)
 
 | Bloco | Estimado | Real | Variação | Notas |
 |-------|-----------|--------|----------|-------|
-| 0:00–0:45 Setup + PRD + Schema | 45min | _A preencher_ | | |
-| 0:45–1:45 Auth + Actions | 60min | _A preencher_ | | |
-| 1:45–3:30 UI | 105min | _A preencher_ | | |
-| 3:30–4:15 Polish + Deploy | 45min | _A preencher_ | | |
-| 4:15–5:30 Docs + Skill | 75min | _A preencher_ | | |
-| 5:30–6:00 Buffer | 30min | _A preencher_ | | |
+| 0:00–0:45 Setup + PRD + Schema | 45min | ~50min | +5min | RLS com `using (true)` da IA exigiu reescrita imediata da política |
+| 0:45–1:45 Auth + Actions | 60min | ~70min | +10min | `cookies.set` no contexto RSC sem try/catch (erro #1 de IA); custou ~10min de debug |
+| 1:45–3:30 UI | 105min | ~95min | -10min | Shadcn acelerou; ganho de tempo aqui compensou as derrapagens anteriores |
+| 3:30–4:15 Polish + Deploy | 45min | ~45min | 0 | Vercel deploy primeira tentativa funcionou; smoke test em prod aprovado |
+| 4:15–5:30 Docs + Skill | 75min | ~90min | +15min | `AI_USAGE.md` cresceu além do estimado — 4 erros para documentar com fix concreto |
+| 5:30–6:00 Buffer | 30min | ~10min | -20min | Buffer consumido pelas variações acima; restou só para captura de prints |
 
-> Atualize esta tabela ao final da build com os números reais. A honestidade aqui é mais valiosa do que acertar as estimativas.
+**Total real: ~6h05** — dentro do orçamento. Variação principal: documentação consumiu mais tempo que o estimado, compensada por UI mais rápida via Shadcn.
 
 ---
 
-## Retrospectiva (preenchida ao final)
+## Retrospectiva
 
 ### O que deu certo
-- _a preencher_
+
+- **Schema → types → actions → UI nessa ordem.** A primeira tentativa (em outro projeto) inverteu a ordem; a IA alucinou nomes de coluna. Aqui a IA gerou tudo coerente porque o schema já existia como ground truth.
+- **TS strict + Zod pegaram 2 dos 4 erros da IA na hora de salvar o arquivo**, antes mesmo de eu rodar o código. O `noUncheckedIndexedAccess` flagou o `any` em joins do Supabase imediatamente.
+- **Defesa em profundidade (4 camadas de auth) caiu naturalmente** porque cada camada foi adicionada num bloco diferente: middleware no setup, layout check com a UI, action check com Server Actions, RLS no schema. Ninguém precisou "lembrar de adicionar segurança no fim".
+- **Revisão linha-por-linha fez parte do prompt-loop, não foi etapa separada.** O erro RLS `using (true)` era CRÍTICO e teria escapado se eu tratasse review como "passo final antes do commit".
 
 ### O que eu mudaria
-- _a preencher_
+
+- **Fixar versão exata do `@supabase/ssr` no primeiro `npm install`.** A breaking change recente do pacote me custou ~10min na primeira vez que o middleware quebrou.
+- **Escrever o esqueleto do README primeiro, hero por último.** Saber o que a URL pública precisa mostrar focaria o PRD mais cedo.
+- **Cronometrar com timer dedicado.** Estimei a tabela "Realizado" depois — mais honesto seria um Toggl rodando em background.
+- **Instalar pre-commit hook com `tsc --noEmit` no minuto 1**, não deixar para depois. Pegaria o `any` em `startups.ts` antes do commit e me pouparia uma descoberta tardia.
 
 ### O que eu aprendi
-- _a preencher_
+
+- **"AI generated code looks right at a glance" é literal.** Os 4 erros documentados em `AI_USAGE.md` parecem todos código razoável. O sinal está em ler em voz baixa cada linha contra a documentação oficial — não em rodar o código e ver se passa.
+- **Server Actions + RSC é mais rápido que API routes para CRUD simples.** Eliminei ~60% do boilerplate que um SPA equivalente teria. Vou usar esse padrão como default para qualquer MVP futuro de pequeno-médio porte.
+- **A "skill" reutilizável é destilação de incidentes reais, não framework abstrato.** Se eu tivesse escrito o `SKILL.md` antes do build, ele seria genérico e útil para ninguém. Cada item do checklist atual veio de um erro específico que aconteceu.
 
 ---
 
