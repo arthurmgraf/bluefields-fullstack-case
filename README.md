@@ -116,33 +116,33 @@ Para facilitar a avaliação, utilize as credenciais de teste abaixo no ambiente
 
 ---
 
-## Acesso Rápido (Demo)
-
-Para facilitar a avaliação, utilize as credenciais de teste abaixo no ambiente de deploy:
-
-*   **URL:** [https://bluefields-fullstack-case.vercel.app/](https://bluefields-fullstack-case.vercel.app/)
-*   **Login:** `demo@startuptracker.app`
-*   **Senha:** `senha123`
-
----
-
 ## Estrutura do Repositório
 
 ```
 bluefields-fullstack-case/
-├── startup-tracker/               # Pasta Principal da Aplicação
-│   ├── src/                       # Next.js App Router (Páginas e Actions)
-│   ├── components/                # Componentes UI (Tema Bluefields Premium)
-│   ├── lib/                       # Configurações de Supabase e Zod
-│   ├── docs/                      # Documentação Técnica Detalhada
-│   │   ├── PRD.md                 # 1. Documento de Requisitos (PRD)
-│   │   ├── EXECUTION_PLAN.md      # 2. Plano Estratégico de Execução
-│   │   ├── AI_USAGE.md            # 4. Log de Uso e Revisão de IA ⭐
-│   │   └── ARCHITECTURE.md        # Deep-dive em Arquitetura Técnica
-│   ├── diagrams/                  # PNGs e Fontes do Excalidraw
-│   ├── scripts/                   # Scripts operacionais e de demo
-│   └── .claude/skills/            # 5. Skill Reutilizável de Revisão de Código
-└── .claude/sdd/                   # Rastreabilidade SDD (Brainstorm → Design)
+├── startup-tracker/                  # Aplicação Next.js 14
+│   ├── src/
+│   │   ├── app/                      # App Router (rotas, layouts, páginas)
+│   │   ├── actions/                  # Server Actions (auth, startups, updates)
+│   │   ├── components/               # Componentes UI + Shadcn
+│   │   └── lib/                      # Supabase clients, Zod schemas, types
+│   ├── supabase/migrations/          # SQL do schema + RLS
+│   ├── docs/                         # Documentação dos 7 entregáveis
+│   │   ├── PRD.md                    # Entregável 1
+│   │   ├── AI-PLAN.md                # Entregável 2 (consolida EXECUTION + AI_USAGE)
+│   │   ├── EXECUTION_PLAN.md         # Plano de tempo + retrospectiva
+│   │   ├── AI_USAGE.md               # Erros da IA + prompts ⭐
+│   │   ├── ARCHITECTURE.md           # Entregável 5
+│   │   ├── QUALITY-REVIEW-SKILL.md   # Entregável 6 (ponteiro pra skill)
+│   │   └── REVIEW.md                 # Entregável 7 (auto-avaliação)
+│   ├── diagrams/                     # 3 Excalidraw + PNGs (arquitetura, fluxo, ER)
+│   ├── scripts/                      # Operacionais e de demo
+│   ├── .claude/skills/code-review/   # Skill reutilizável (canônico)
+│   ├── middleware.ts                 # Auth middleware do Next.js
+│   ├── next.config.mjs               # Config Next.js
+│   ├── tailwind.config.ts            # Config Tailwind
+│   └── package.json
+└── .claude/sdd/                      # Rastreabilidade SDD (Brainstorm → Design)
 ```
 
 ---
