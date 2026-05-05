@@ -29,6 +29,16 @@ Built with Next.js 14, Supabase (Postgres + RLS), and Zod-enforced guardrails.
 
 ---
 
+## AI-First Methodology
+
+| Component | Method | Impact |
+|---|---|---|
+| **SDD Workflow** | Spec-Driven Development | Design-First approach (Brainstorm → Define → Design → Build). |
+| **Diagram Agent** | Automated Visualization | Codebase analysis to generate professional Excalidraw diagrams. |
+| **Zod Guardrails** | AI Safety | Automated runtime validation to prevent logic drift. |
+
+---
+
 ## Diagrams
 
 ### 1. System Architecture

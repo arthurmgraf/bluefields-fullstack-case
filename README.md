@@ -56,6 +56,18 @@ USER (Browser)  ──HTTPS──>  Vercel Edge (Next.js 14)  ──Server Actio
 
 ---
 
+## AI-First Methodology
+
+This project was built using a strict AI-Human partnership model, leveraging advanced orchestration patterns to ensure high-quality engineering.
+
+| Component | Method | Impact |
+|---|---|---|
+| **SDD Workflow** | Spec-Driven Development | **Design-First approach.** Features are brainstormed, defined, and designed in `.claude/sdd/` before a single line of code is written. |
+| **Diagram Agent** | Automated Visualization | **Self-documenting architecture.** A specialized agent analyzes the codebase to generate and sync professional Excalidraw diagrams automatically. |
+| **Zod Guardrails** | AI Safety | **Zero-trust boundary.** Automated runtime validation at every entry point to prevent AI-generated logic drift. |
+
+---
+
 ## Data Model
 
 ### Relational Schema
