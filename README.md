@@ -5,7 +5,7 @@
 ![Supabase](https://img.shields.io/badge/Supabase-Auth--DB-green)
 ![Vercel Cost](https://img.shields.io/badge/Vercel%20cost-%240.00%2Fmo-brightgreen)
 
-Enterprise-grade portfolio tracking platform for accelerators and venture studios. Unified source of truth for startup status, risk, and updates — eliminating information silos across WhatsApp, email, and disparate Notion pages.
+Professional portfolio tracking platform for accelerators and venture studios. Unified source of truth for startup status, risk, and updates — eliminating information silos across WhatsApp, email, and disparate Notion pages.
 
 Built as a technical case for **Bluefields**, following a strict AI-First development workflow.
 
@@ -20,7 +20,7 @@ Built as a technical case for **Bluefields**, following a strict AI-First develo
 | Type Safety | **100%** (Strict TypeScript + Zod) |
 | Security Model | Row Level Security (RLS) forced at DB layer |
 | AI-Generated Code | **~85%** (Claude Code + Human-in-the-loop review) |
-| Data Quality | Schema-enforced via Zod + Postgres constraints |
+| Data Integrity | ACID compliant Postgres + Zod validation |
 
 ---
 
@@ -58,29 +58,21 @@ USER (Browser)  ──HTTPS──>  Vercel Edge (Next.js 14)  ──Server Actio
 
 ## Data Model
 
-### Medallion-inspired Layers
-
-| Layer | Context | Tables | Purpose |
-|---|---|---|---|
-| **Raw (Auth)** | Supabase Auth | `auth.users` | Source of truth for identity |
-| **Silver (Core)** | Public Schema | `profiles`, `startups` | Cleaned, normalized domain data |
-| **Gold (History)** | Public Schema | `startup_updates` | Immutable append-only chronological history |
-
 ### Relational Schema
 
 ```
-                     profiles
+                     profiles (Users)
                         |
         author_id <── startup_updates ──> startup_id
                                               |
                                        responsible_id
 ```
 
-| Table | Grain | Key Columns |
+| Table | Purpose | Access Control (RLS) |
 |---|---|---|
-| `profiles` | One per user | id (FK auth.users), full_name |
-| `startups` | One per startup | name, segment, phase, risk_level |
-| `startup_updates` | One per update | content, blockers, risk_level (mirrored) |
+| `profiles` | Stores user metadata and names | Authenticated users (Read/Self-Edit) |
+| `startups` | Core portfolio tracking (name, segment, risk) | Authenticated users (Read/Write) |
+| `startup_updates` | Append-only chronological status log | Author-only (Insert) |
 
 ---
 
@@ -102,17 +94,6 @@ Database schema with Foreign Keys and RLS policy annotations.
 
 ---
 
-## Airflow Orchestration (Conceptual)
-
-While the MVP uses `revalidatePath` for immediate consistency, a scale-out plan includes:
-
-| DAG | Schedule | Purpose |
-|---|---|---|
-| `portfolio_risk_cleanup` | `0 0 * * *` | Consolidate risk snapshots for historical visualization |
-| `investor_digest_email` | `0 8 * * 1` | Weekly summary of 🔴 risk startups to partners |
-
----
-
 ## Repository Structure
 
 ```
@@ -127,7 +108,7 @@ bluefields-fullstack-case/
 │   │   ├── AI_USAGE.md            # 4. AI Usage & Review Log ⭐
 │   │   └── ARCHITECTURE.md        # Technical Architecture Deep-dive
 │   ├── diagrams/                  # PNG Exports & Excalidraw Sources
-│   ├── scripts/                   # Operational Scripts
+│   ├── scripts/                   # Operational & demo setup scripts
 │   └── .claude/skills/            # 5. Reusable AI-Assisted Review Skill
 └── .claude/sdd/                   # SDD Traceability (Brainstorm → Design)
 ```
@@ -140,7 +121,6 @@ bluefields-fullstack-case/
 
 - [Node.js 18+](https://nodejs.org)
 - [Supabase Account](https://supabase.com)
-- [Vercel CLI](https://vercel.com/cli)
 
 ### Quick Setup
 
