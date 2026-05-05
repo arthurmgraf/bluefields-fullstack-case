@@ -1,76 +1,76 @@
-# Execution Plan & Retrospective
+# Plano de Execução e Retrospectiva
 
-> The build plan and the post-mortem in one place.
+> O plano de desenvolvimento e o "post-mortem" em um só lugar.
 
 ---
 
-## Plan (set at hour 0)
+## Plano (definido na hora 0)
 
-| Hour | Block | Output | Hard cutoff |
+| Hora | Bloco | Entrega | Corte Rígido |
 |------|-------|--------|-------------|
-| 0:00 – 0:45 | Setup + PRD + Schema | Project init, Supabase configured, schema migrated, PRD v1 | 0:45 |
-| 0:45 – 1:45 | Auth + Server Actions | Magic-link login, middleware gate, all 3 actions with Zod | 1:45 |
-| 1:45 – 3:30 | UI — 3 pages | `/login`, `/` dashboard, `/startups/[id]` detail with inline form | 3:30 |
-| 3:30 – 4:15 | Polish + Seed + Deploy | 8 seeded startups, deployed to Vercel, smoke tests pass on prod | 4:15 |
-| 4:15 – 5:30 | Docs + Skill | README, AI_USAGE, ARCHITECTURE, TODO, code-review skill | 5:30 |
-| 5:30 – 6:00 | Buffer | Final walkthrough, screenshots for README, submission email | 6:00 |
+| 0:00 – 0:45 | Setup + PRD + Schema | Iniciação do projeto, Supabase configurado, migração do schema, PRD v1 | 0:45 |
+| 0:45 – 1:45 | Auth + Server Actions | Login via Magic-link, barreira de middleware, todas as 3 actions com Zod | 1:45 |
+| 1:45 – 3:30 | UI — 3 páginas | `/login`, dashboard `/`, detalhes `/startups/[id]` com formulário inline | 3:30 |
+| 3:30 – 4:15 | Polish + Seed + Deploy | 8 startups iniciais (seed), deploy na Vercel, smoke tests aprovados em prod | 4:15 |
+| 4:15 – 5:30 | Docs + Skill | README, AI_USAGE, ARCHITECTURE, TODO, skill de code-review | 5:30 |
+| 5:30 – 6:00 | Buffer | Revisão final, capturas de tela para o README, e-mail de submissão | 6:00 |
 
-**Rule:** if a block runs over by >15min, ship what works and skip ahead. No rabbit holes.
+**Regra:** se um bloco ultrapassar o tempo em >15min, entregue o que funciona e pule para o próximo. Sem "buracos de coelho" (rabbit holes).
 
 ---
 
-## Failure-mode contingencies (set in advance)
+## Contingências para falhas (definidas com antecedência)
 
-| At hour | If incomplete, drop... | Don't drop... |
+| Na hora | Se incompleto, descarte... | Não descarte... |
 |---------|------------------------|----------------|
-| 1:45 (auth not done) | Magic link → use hardcoded demo password in seed | DB schema, deploy step |
-| 3:30 (UI behind) | `/startups/[id]` detail page → put updates in modal on dashboard | Dashboard page itself |
-| 4:15 (deploy issues) | Vercel CLI direct push, skip Vercel Git connect | A working URL of any kind |
-| 5:30 (docs behind) | Trim AI_USAGE to 80 lines, skip ARCHITECTURE | README, skill, AI_USAGE |
+| 1:45 (auth não ok) | Magic link → use senha demo fixa no seed | Schema do BD, etapa de deploy |
+| 3:30 (UI atrasada) | Página de detalhes → coloque as atualizações em um modal no dashboard | A página do dashboard em si |
+| 4:15 (problemas no deploy) | Push direto via Vercel CLI, pule a conexão Git da Vercel | Uma URL funcional de qualquer tipo |
+| 5:30 (docs atrasados) | Reduza o AI_USAGE para 80 linhas, pule ARCHITECTURE | README, skill, AI_USAGE |
 
-### Hard rules
-- **Never skip the deploy step.** A working Vercel URL beats a perfect localhost.
-- **Never skip AI_USAGE.md.** It is the highest-signal doc.
-- **Never skip line-by-line review.** That is the entire premise.
+### Regras de ouro
+- **Nunca pule a etapa de deploy.** Uma URL da Vercel funcionando vence um localhost perfeito.
+- **Nunca pule o AI_USAGE.md.** É o documento de maior valor para o avaliador.
+- **Nunca pule a revisão linha por linha.** Essa é a premissa fundamental deste fluxo.
 
 ---
 
-## Actuals (filled during the build)
+## Realizado (preenchido durante a build)
 
-| Block | Estimated | Actual | Variance | Notes |
+| Bloco | Estimado | Real | Variação | Notas |
 |-------|-----------|--------|----------|-------|
-| 0:00–0:45 Setup + PRD + Schema | 45min | _TBD_ | | |
-| 0:45–1:45 Auth + Actions | 60min | _TBD_ | | |
-| 1:45–3:30 UI | 105min | _TBD_ | | |
-| 3:30–4:15 Polish + Deploy | 45min | _TBD_ | | |
-| 4:15–5:30 Docs + Skill | 75min | _TBD_ | | |
-| 5:30–6:00 Buffer | 30min | _TBD_ | | |
+| 0:00–0:45 Setup + PRD + Schema | 45min | _A preencher_ | | |
+| 0:45–1:45 Auth + Actions | 60min | _A preencher_ | | |
+| 1:45–3:30 UI | 105min | _A preencher_ | | |
+| 3:30–4:15 Polish + Deploy | 45min | _A preencher_ | | |
+| 4:15–5:30 Docs + Skill | 75min | _A preencher_ | | |
+| 5:30–6:00 Buffer | 30min | _A preencher_ | | |
 
-> Update this table at the end of the build with the real numbers. Honesty here is more valuable than hitting the estimates.
-
----
-
-## Retrospective (filled at end)
-
-### What went well
-- _to fill_
-
-### What I'd change
-- _to fill_
-
-### What I learned
-- _to fill_
+> Atualize esta tabela ao final da build com os números reais. A honestidade aqui é mais valiosa do que acertar as estimativas.
 
 ---
 
-## Reusable patterns extracted from this build
+## Retrospectiva (preenchida ao final)
 
-The patterns below are not specific to this product — they're how I'd build *any* AI-augmented MVP next time.
+### O que deu certo
+- _a preencher_
 
-1. **Schema → types → actions → UI.** Always in that order. Generating UI before the schema is fixed produces shape-mismatch refactors.
-2. **Zod schemas live in one file.** Importable from any Server Action; type inferred via `z.infer<>`. Single source of truth.
-3. **`@supabase/ssr` has three contexts.** Server (RSC + actions), browser, middleware. Don't mix them. The middleware variant exists specifically because cookies behave differently in middleware vs RSC.
-4. **Discriminated-union return types from Server Actions.** `{ ok: true, data? } | { ok: false, error, fieldErrors? }`. Easier for the UI than try/catch around `await action(...)`.
-5. **`'use client'` is a cost.** Default to RSC; flip to client only when you need an event handler or browser-only state.
-6. **`revalidatePath` after every mutation.** This is the cache-invalidation discipline. Forget it once and the bug is a debugging hour.
-7. **AI's defaults are *almost* right.** Build the line-by-line read into the workflow, not as a separate "review step". Otherwise it gets cut.
+### O que eu mudaria
+- _a preencher_
+
+### O que eu aprendi
+- _a preencher_
+
+---
+
+## Padrões reutilizáveis extraídos desta build
+
+Os padrões abaixo não são específicos deste produto — são a forma como eu construiria *qualquer* MVP auxiliado por IA da próxima vez.
+
+1. **Schema → types → actions → UI.** Sempre nessa ordem. Gerar a UI antes que o schema esteja fixo produz refatorações por incompatibilidade de formato.
+2. **Schemas Zod vivem em um único arquivo.** Importáveis de qualquer Server Action; tipo inferido via `z.infer<>`. Fonte única de verdade.
+3. **`@supabase/ssr` possui três contextos.** Servidor (RSC + actions), browser, middleware. Não os misture. A variante do middleware existe especificamente porque os cookies se comportam de forma diferente no middleware vs RSC.
+4. **Tipos de retorno em Discriminated-union para Server Actions.** `{ ok: true, data? } | { ok: false, error, fieldErrors? }`. Mais fácil para a UI do que try/catch em volta de `await action(...)`.
+5. **`'use client'` é um custo.** Use RSC por padrão; mude para cliente apenas quando precisar de um event handler ou estado exclusivo do navegador.
+6. **`revalidatePath` após cada mutação.** Esta é a disciplina de invalidação de cache. Esquecer uma vez e o bug consumirá uma hora de depuração.
+7. **Os padrões da IA são *quase* corretos.** Incorpore a leitura linha por linha no fluxo de trabalho, não como uma "etapa de revisão" separada. Caso contrário, ela será descartada sob pressão.

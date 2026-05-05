@@ -1,138 +1,138 @@
 # PRD — Startup Tracker
 
-> Product Requirements Document for the MVP. Concise on purpose: every section is one screen of reading.
+> Documento de Requisitos do Produto para o MVP. Conciso por design: cada seção é uma tela de leitura.
 
-| Field | Value |
+| Campo | Valor |
 |---|---|
-| **Product** | Startup Tracker |
-| **Version** | 0.1 (MVP) |
-| **Date** | 2026-05-04 |
-| **Owner** | Solo build |
+| **Produto** | Startup Tracker |
+| **Versão** | 0.1 (MVP) |
+| **Data** | 04/05/2026 |
+| **Responsável** | Solo build |
 
 ---
 
-## 1. Problem
+## 1. Problema
 
-Accelerators and venture studios track 10s–100s of startups in their portfolio. The status of each lives in WhatsApp, email, Notion, Google Drive, and tribal knowledge. The cost: 4–6 hours/day lost to information hunting, late detection of struggling startups, and decision-making with no shared source of truth.
+Aceleradoras e venture studios acompanham dezenas ou centenas de startups em seu portfólio. O status de cada uma vive espalhado em WhatsApp, e-mail, Notion, Google Drive e conhecimento tácito. O custo: 4 a 6 horas por dia perdidas na busca por informações, detecção tardia de startups em dificuldade e tomada de decisão sem uma fonte única de verdade compartilhada.
 
-**Pain quote:** *"I have to message 5 people to know if Startup X is on track this week."*
+**Frase de dor:** *"Tenho que mandar mensagem para 5 pessoas para saber se a Startup X está no caminho certo esta semana."*
 
 ---
 
-## 2. Goal
+## 2. Objetivo
 
-A single authenticated web app where any team member can:
+Um aplicativo web autenticado único onde qualquer membro da equipe possa:
 
-- See **every startup** in the portfolio in one view, with current risk level
-- Open any startup and see its **full update history** chronologically
-- **Add an update** in <30 seconds: progress, blockers, next steps, risk level
+- Ver **todas as startups** do portfólio em uma única visualização, com o nível de risco atual
+- Abrir qualquer startup e ver seu **histórico completo de atualizações** cronologicamente
+- **Adicionar uma atualização** em menos de 30 segundos: progresso, impedimentos, próximos passos e nível de risco
 
 ---
 
 ## 3. Personas
 
-| Persona | Role | What they do here |
+| Persona | Papel | O que faz aqui |
 |---------|------|---|
-| **Portfolio lead** | Manages the accelerator's investment cohort | Skims dashboard daily, drills into red/yellow startups |
-| **Acceleration analyst** | Direct contact with founders | Adds weekly updates after each call |
+| **Líder de Portfólio** | Gerencia a coorte de investimentos da aceleradora | Revisa o dashboard diariamente, foca nas startups com risco médio/alto (amarelo/vermelho) |
+| **Analista de Aceleração** | Contato direto com os fundadores | Adiciona atualizações semanais após cada reunião ou call |
 
-> The MVP collapses both personas into a single "authenticated user" role. Admin/viewer split is deferred (see §8).
-
----
-
-## 4. User stories (MoSCoW)
-
-### Must Have
-
-- **US-1** As a team member, I sign in with my work email so I don't have to remember another password
-- **US-2** As a team member, I see all startups in one grid with their current risk so I can spot fires immediately
-- **US-3** As a team member, I click into a startup and see its full update history chronologically
-- **US-4** As a team member, I add a new update with progress / blockers / next steps / risk in one form
-- **US-5** As a team member, I can register a new startup the team is now tracking
-- **US-6** As an admin, anonymous traffic cannot read or write any data
-
-### Should Have
-
-- **US-7** As a team member, I see how many startups are 🟢 / 🟡 / 🔴 at the top of the dashboard
-- **US-8** As a team member, the most-recently-updated startups surface first
-
-### Could Have (deferred)
-
-- Filters and search on dashboard
-- Inline edit of risk_level on cards
-- Risk history visualization (sparkline of risk over time)
-- Markdown rendering in updates
-- Edit/delete updates (currently append-only)
-- Admin/viewer role split
+> O MVP colapsa ambas as personas em um único papel de "usuário autenticado". A separação entre administrador/visualizador foi adiada (ver §8).
 
 ---
 
-## 5. Functional requirements
+## 4. Histórias de Usuário (MoSCoW)
 
-| ID | Requirement |
+### Must Have (Obrigatório)
+
+- **US-1** Como membro da equipe, eu faço login com meu e-mail de trabalho para não precisar lembrar de outra senha
+- **US-2** Como membro da equipe, eu vejo todas as startups em uma grade única com seus riscos atuais para identificar problemas imediatamente
+- **US-3** Como membro da equipe, eu clico em uma startup e vejo todo o seu histórico de atualizações cronologicamente
+- **US-4** Como membro da equipe, eu adiciono uma nova atualização com progresso / impedimentos / próximos passos / risco em um único formulário
+- **US-5** Como membro da equipe, eu posso cadastrar uma nova startup que a equipe começou a acompanhar
+- **US-6** Como administrador, garanto que o tráfego anônimo não possa ler ou gravar nenhum dado
+
+### Should Have (Importante)
+
+- **US-7** Como membro da equipe, eu vejo quantas startups estão em 🟢 / 🟡 / 🔴 no topo do dashboard
+- **US-8** Como membro da equipe, as startups atualizadas mais recentemente aparecem primeiro
+
+### Could Have (Desejável - Adiado)
+
+- Filtros e busca no dashboard
+- Edição rápida do nível de risco nos cards
+- Visualização do histórico de risco (gráfico de linha do risco ao longo do tempo)
+- Renderização de Markdown nas atualizações
+- Edição/exclusão de atualizações (atualmente apenas inserção)
+- Separação de papéis Admin/Visualizador
+
+---
+
+## 5. Requisitos Funcionais
+
+| ID | Requisito |
 |----|---|
-| FR-1 | Magic-link sign-in via Supabase Auth |
-| FR-2 | Dashboard lists all startups, ordered by `updated_at DESC` |
-| FR-3 | Dashboard shows summary counts grouped by `risk_level` |
-| FR-4 | Detail page shows startup metadata + chronological update list (newest first) |
-| FR-5 | Inline form on detail page creates a new update |
-| FR-6 | Creating an update mirrors `risk_level` to the parent startup |
-| FR-7 | Inline form on dashboard creates a new startup |
-| FR-8 | Sign-out clears the session and redirects to `/login` |
+| FR-1 | Login via Magic-link usando Supabase Auth |
+| FR-2 | Dashboard lista todas as startups, ordenadas por `updated_at DESC` |
+| FR-3 | Dashboard mostra contadores de resumo agrupados por `risk_level` |
+| FR-4 | Página de detalhes mostra metadados da startup + lista cronológica de atualizações (mais recentes primeiro) |
+| FR-5 | Formulário na página de detalhes cria uma nova atualização |
+| FR-6 | A criação de uma atualização reflete o `risk_level` na startup pai |
+| FR-7 | Formulário no dashboard cria uma nova startup |
+| FR-8 | Logout limpa a sessão e redireciona para `/login` |
 
-## 6. Non-functional requirements
+## 6. Requisitos Não Funcionais
 
-| ID | Requirement |
+| ID | Requisito |
 |----|---|
-| NFR-1 | All data access enforced at DB layer via Row Level Security |
-| NFR-2 | Zero `any` types in production code |
-| NFR-3 | Every Server Action validates input with Zod before any DB call |
-| NFR-4 | p95 page load < 2s on Vercel free tier (cold) |
-| NFR-5 | Magic-link delivery completes in < 30s |
-| NFR-6 | UI works without JavaScript for the auth flow (form actions) |
+| NFR-1 | Todo acesso a dados é forçado na camada do BD via Row Level Security (RLS) |
+| NFR-2 | Zero tipos `any` no código de produção |
+| NFR-3 | Toda Server Action valida a entrada com Zod antes de qualquer chamada ao banco |
+| NFR-4 | p95 de carregamento de página < 2s no tier free da Vercel (cold start) |
+| NFR-5 | Entrega do Magic-link concluída em < 30s |
+| NFR-6 | A UI funciona sem JavaScript para o fluxo de autenticação (form actions) |
 
 ---
 
-## 7. Acceptance criteria (smoke checklist)
+## 7. Critérios de Aceitação (Checklist de Teste)
 
-- [ ] Submit valid email at `/login` → magic-link arrives → click → land on `/`
-- [ ] Dashboard shows seeded startups with correct risk badges
-- [ ] Click any card → detail page loads with metadata + update timeline
-- [ ] Submit a new update → it appears at the top of the timeline; parent risk reflects the new level
-- [ ] Open `/startups/{any-uuid}` in incognito → redirected to `/login`
-- [ ] Submit form with empty `content` → validation error shown; no DB write
-- [ ] Submit form with invalid `risk_level` → rejected by Zod; no DB write
-- [ ] Sign out → cookie cleared → cannot access `/`
-
----
-
-## 8. Out of scope (MVP)
-
-- Filters / search
-- Risk history visualization
-- Role-based access control (admin/viewer)
-- Markdown editor for updates
-- Edit / delete updates
-- Notifications / email digests
-- WhatsApp / Slack integrations
-- File uploads (pitch decks)
-- Multi-tenancy
-- AI features inside the product
+- [ ] Enviar e-mail válido em `/login` → magic-link chega → clicar → pousar em `/`
+- [ ] Dashboard mostra startups iniciais com os selos de risco corretos
+- [ ] Clicar em qualquer card → página de detalhes carrega com metadados + linha do tempo de atualizações
+- [ ] Enviar uma nova atualização → ela aparece no topo da linha do tempo; o risco do pai reflete o novo nível
+- [ ] Abrir `/startups/{qualquer-uuid}` em guia anônima → redirecionado para `/login`
+- [ ] Enviar formulário com `content` vazio → erro de validação exibido; sem gravação no BD
+- [ ] Enviar formulário com `risk_level` inválido → rejeitado pelo Zod; sem gravação no BD
+- [ ] Fazer logout → cookie limpo → acesso negado a `/`
 
 ---
 
-## 9. Technical constraints
+## 8. Fora do Escopo (MVP)
 
-- **Stack** locked: Next.js 14 (App Router) + Supabase + Vercel + TypeScript + Tailwind + Shadcn + Zod
-- **Free tier only**: Vercel Hobby + Supabase Free
-- **Time budget**: 6h hard wall-clock for the original build
-- **No service-role key** in the app — anon key + RLS only
+- Filtros / Busca avançada
+- Visualização de histórico de risco (gráficos)
+- Controle de acesso baseado em papéis (admin/visualizador)
+- Editor Markdown para atualizações
+- Edição / Exclusão de atualizações
+- Notificações / Resumos por e-mail
+- Integrações com WhatsApp / Slack
+- Upload de arquivos (pitch decks)
+- Multi-tenancy (múltiplas organizações)
+- Funcionalidades de IA dentro do produto
 
 ---
 
-## 10. Diagrams
+## 9. Restrições Técnicas
 
-See [`../diagrams/`](../diagrams/) for three Excalidraw diagrams:
-- `architecture.excalidraw` — System overview (Browser → Vercel/Next.js → Supabase)
-- `data-flow.excalidraw` — Read flow, write flow, auth flow on one canvas
-- `data-model.excalidraw` — ER schema with FKs and an annotated RLS summary
+- **Stack** definida: Next.js 14 (App Router) + Supabase + Vercel + TypeScript + Tailwind + Shadcn + Zod
+- **Apenas camadas gratuitas**: Vercel Hobby + Supabase Free
+- **Orçamento de tempo**: 6h de tempo real para o desenvolvimento original
+- **Sem chave service-role** no app — apenas anon key + RLS
+
+---
+
+## 10. Diagramas
+
+Veja [`../diagrams/`](../diagrams/) para três diagramas Excalidraw (atualizados com a paleta Bluefields):
+- `architecture.excalidraw` — Visão geral do sistema (Browser → Vercel/Next.js → Supabase)
+- `data-flow.excalidraw` — Fluxos de Leitura, Escrita e Autenticação
+- `data-model.excalidraw` — Esquema ER com chaves estrangeiras e resumo de RLS

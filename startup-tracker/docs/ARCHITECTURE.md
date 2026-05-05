@@ -1,14 +1,14 @@
-# Architecture
+# Arquitetura
 
-> System design, key decisions, and the security model in 5 minutes of reading.
+> Design do sistema, decisões-chave e modelo de segurança em 5 minutos de leitura.
 
 ---
 
-## System diagram
+## Diagrama do sistema
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────┐
-│                          USER (browser)                               │
+│                          USUÁRIO (browser)                            │
 │                              │                                        │
 │                          HTTPS / cookies                              │
 │                              ▼                                        │
@@ -22,7 +22,7 @@
 │  │                       │  /startups/[id]→ page.tsx (RSC)    │  │  │
 │  │                       └────────┬───────────────────────────┘  │  │
 │  │                                │ Server Actions                │  │
-│  │                                │ (Zod validate)                │  │
+│  │                                │ (Validação Zod)               │  │
 │  │                                ▼                                │  │
 │  │                       ┌────────────────────┐                    │  │
 │  │                       │  src/actions/*.ts  │                    │  │
@@ -35,7 +35,7 @@
 │  │  ┌──────────────────┐    ┌─────────────────────────────────┐ │  │
 │  │  │  Auth (GoTrue)   │    │   Postgres + RLS                │ │  │
 │  │  │  - Magic link    │    │   ┌──────────────────────┐      │ │  │
-│  │  │  - JWT issuance  │    │   │ profiles · startups  │      │ │  │
+│  │  │  - Emissão JWT   │    │   │ profiles · startups  │      │ │  │
 │  │  │                  │    │   │ startup_updates      │      │ │  │
 │  │  └──────────────────┘    │   └──────────────────────┘      │ │  │
 │  └────────────────────────────────────────────────────────────────┘  │
@@ -44,112 +44,112 @@
 
 ---
 
-## Key decisions
+## Decisões-chave
 
-### 1. `@supabase/ssr` (not `auth-helpers-nextjs`)
+### 1. `@supabase/ssr` (não `auth-helpers-nextjs`)
 
-`@supabase/auth-helpers-nextjs` is deprecated. `@supabase/ssr` is the canonical path for App Router with three context-specific factories: `createServerClient` (RSC + actions), `createBrowserClient` (client components), and a middleware variant.
+O `@supabase/auth-helpers-nextjs` está depreciado. O `@supabase/ssr` é o caminho canônico para App Router com três fábricas específicas de contexto: `createServerClient` (RSC + actions), `createBrowserClient` (componentes cliente) e uma variante para middleware.
 
-### 2. RSC for reads, Server Actions for writes — no API routes
+### 2. RSC para leitura, Server Actions para escrita — sem rotas de API
 
-The MVP has no real-time requirements. RSC + Server Actions removes 100% of API-route boilerplate, keeps secrets server-side, and `revalidatePath()` handles cache invalidation after mutations. An equivalent SPA would have ~60% more code for no functional gain.
+O MVP não tem requisitos de tempo real. RSC + Server Actions elimina 100% do boilerplate de rotas de API, mantém os segredos no lado do servidor, e `revalidatePath()` lida com a invalidação do cache após mutações. Um SPA equivalente teria ~60% a mais de código sem ganho funcional.
 
-### 3. Zod at the Server Action boundary
+### 3. Zod na fronteira da Server Action
 
-Every Server Action's first instruction is `Schema.safeParse(formData)`. This is the runtime guardrail against AI-generated code passing malformed input to the database — a failure mode the case explicitly asks about ("guardrails de IA").
+A primeira instrução de cada Server Action é `Schema.safeParse(formData)`. Esta é a barreira em tempo de execução contra códigos gerados por IA que enviem entradas malformadas para o banco de dados — um modo de falha que o case pede explicitamente ("guardrails de IA").
 
-### 4. RLS-only security model — no service role key in the app
+### 4. Modelo de segurança baseado apenas em RLS — sem service role key no app
 
-The `NEXT_PUBLIC_SUPABASE_ANON_KEY` is shipped to the browser by design. Security is enforced at the Postgres layer:
+A `NEXT_PUBLIC_SUPABASE_ANON_KEY` é enviada ao navegador por design. A segurança é aplicada na camada do Postgres:
 
-- Every table has `enable row level security`
-- `auth.role() = 'authenticated'` gates SELECT and write
-- `auth.uid() = author_id` gates `startup_updates` INSERT
+- Toda tabela possui `enable row level security`
+- `auth.role() = 'authenticated'` protege SELECT e escrita
+- `auth.uid() = author_id` protege o INSERT em `startup_updates`
 
-If the app code had a bug that allowed anonymous traffic to call a Server Action, the database would still refuse the operation. **Defense in depth.**
+Se o código do app tivesse um bug que permitisse tráfego anônimo chamar uma Server Action, o banco de dados ainda recusaria a operação. **Defesa em profundidade.**
 
-### 5. Route groups `(auth)` and `(authed)` for layout separation
+### 5. Grupos de rotas `(auth)` e `(authed)` para separação de layout
 
-`(auth)` hosts `/login` (public). `(authed)` hosts everything protected and provides the app shell with header + sign-out. Middleware redirects unauthenticated traffic out of `(authed)` to `/login` before any page component runs.
+`(auth)` hospeda o `/login` (público). `(authed)` hospeda tudo o que é protegido e fornece o shell do app com cabeçalho + sign-out. O middleware redireciona tráfego não autenticado de `(authed)` para `/login` antes que qualquer componente de página seja executado.
 
-### 6. No formal test suite for the MVP — explicit honest debt
+### 6. Sem suite formal de testes para o MVP — dívida técnica honesta e explícita
 
-Time-boxed at 6h. TypeScript strict + Zod + manual smoke is the chosen guardrail. Documented in [`TODO.md`](../TODO.md). The case-brief language is *"saber quando aceitar um hack e quando refatorar"* — this is the explicit, defended hack.
+Tempo limitado a 6h. TypeScript strict + Zod + smoke test manual é a barreira escolhida. Documentado em [`TODO.md`](../TODO.md). A linguagem do case-brief é *"saber quando aceitar um hack e quando refatorar"* — este é o hack explícito e defendido.
 
 ---
 
-## Data flow
+## Fluxo de dados
 
-### Read (Dashboard render)
+### Leitura (Renderização do Dashboard)
 
 ```
-1. Browser GET /
-2. middleware.ts refreshes session cookie
-3. (authed)/layout.tsx checks auth → redirects to /login if no user
-4. (authed)/page.tsx (RSC) calls listStartups()
+1. Browser faz GET /
+2. middleware.ts atualiza o cookie da sessão
+3. (authed)/layout.tsx verifica auth → redireciona para /login se não houver usuário
+4. (authed)/page.tsx (RSC) chama listStartups()
 5. listStartups → createClient() → supabase.from('startups').select(...)
-6. RLS evaluates auth.role() = 'authenticated' on every row
-7. Rows mapped → StartupCard → HTML streamed to browser
-   (zero client-side fetches)
+6. RLS avalia auth.role() = 'authenticated' em cada linha
+7. Linhas mapeadas → StartupCard → HTML enviado ao navegador
+   (zero buscas no lado do cliente)
 ```
 
-### Write (Create update)
+### Escrita (Criar atualização)
 
 ```
-1. User submits <form action={createUpdate}>
-2. Browser POSTs FormData (Next.js routes to the action)
+1. Usuário envia <form action={createUpdate}>
+2. Navegador faz POST do FormData (Next.js roteia para a action)
 3. createUpdate:
-   a. CreateUpdateSchema.safeParse — Zod boundary
-   b. supabase.auth.getUser() — auth gate
-   c. INSERT into startup_updates — RLS auth.uid() = author_id check
-   d. UPDATE parent startups.risk_level + updated_at
-   e. revalidatePath('/startups/[id]') and '/'
-4. Browser receives the redirect/refresh; RSC re-renders
+   a. CreateUpdateSchema.safeParse — Fronteira Zod
+   b. supabase.auth.getUser() — barreira de autenticação
+   c. INSERT em startup_updates — verificação RLS auth.uid() = author_id
+   d. UPDATE startups (parent) risk_level + updated_at
+   e. revalidatePath('/startups/[id]') e '/'
+4. Navegador recebe o redirecionamento/atualização; RSC renderiza novamente
 ```
 
 ### Auth (Magic link)
 
 ```
-1. User submits email on /login → signIn Server Action
+1. Usuário envia e-mail no /login → Server Action signIn
 2. supabase.auth.signInWithOtp({ emailRedirectTo: SITE_URL + '/auth/callback' })
-3. Supabase Auth sends email; user clicks the link
-4. Browser hits /auth/callback?code=...
+3. Supabase Auth envia e-mail; usuário clica no link
+4. Navegador acessa /auth/callback?code=...
 5. route.ts: supabase.auth.exchangeCodeForSession(code)
-6. Cookie set; redirect to /
-7. handle_new_user trigger creates profile row on first login
+6. Cookie é definido; redireciona para /
+7. Trigger handle_new_user cria a linha do perfil no primeiro login
 ```
 
 ---
 
-## Security model
+## Modelo de segurança
 
-| Layer | What it protects against | How |
+| Camada | Contra o que protege | Como |
 |-------|--------------------------|---|
-| **Cookie (HttpOnly + Secure)** | XSS token theft | `@supabase/ssr` defaults |
-| **Middleware** | Unauth users hitting protected pages | Redirects to `/login` before render |
-| **Layout auth check** | Direct RSC invocation skipping middleware | `supabase.auth.getUser()` in `(authed)/layout.tsx` |
-| **Server Action auth check** | Forged form POSTs | `getUser()` then `redirect('/login')` if null |
-| **Zod schema** | Malformed input reaching the DB | `safeParse` before any DB call |
-| **RLS on tables** | Anon-key abuse from any source | Postgres-layer policies on every table |
-| **Locked redirect_to** | Open redirects | `NEXT_PUBLIC_SITE_URL` is the only allowed redirect target |
-| **No service role key** | Privilege escalation | App never holds a key that bypasses RLS |
+| **Cookie (HttpOnly + Secure)** | Roubo de token via XSS | Padrões do `@supabase/ssr` |
+| **Middleware** | Usuários não autenticados acessando páginas protegidas | Redireciona para `/login` antes da renderização |
+| **Verificação auth no Layout** | Invocação direta de RSC pulando o middleware | `supabase.auth.getUser()` em `(authed)/layout.tsx` |
+| **Verificação auth na Server Action** | POSTs de formulários forjados | `getUser()` seguido de `redirect('/login')` se nulo |
+| **Schema Zod** | Entrada malformada atingindo o BD | `safeParse` antes de qualquer chamada ao banco |
+| **RLS nas tabelas** | Abuso da anon-key de qualquer fonte | Políticas na camada do Postgres em todas as tabelas |
+| **redirect_to bloqueado** | Redirecionamentos abertos | `NEXT_PUBLIC_SITE_URL` é o único alvo de redirecionamento permitido |
+| **Sem service role key** | Escalação de privilégios | O app nunca detém uma chave que ignore o RLS |
 
 ---
 
-## Observability
+## Observabilidade
 
-- **Logging**: `console.error('<action> failed:', error.message, { context })` at every I/O boundary. Vercel captures stdout/stderr automatically.
-- **Metrics**: Vercel default request metrics. No custom metrics in MVP.
-- **Tracing**: Out of scope. See [`TODO.md`](../TODO.md) for OpenTelemetry plan.
+- **Logging**: `console.error('<action> failed:', error.message, { context })` em todas as fronteiras de I/O. Vercel captura stdout/stderr automaticamente.
+- **Métricas**: Métricas de requisição padrão da Vercel. Sem métricas customizadas no MVP.
+- **Rastreamento (Tracing)**: Fora do escopo. Veja [`TODO.md`](../TODO.md) para o plano de OpenTelemetry.
 
 ---
 
-## Trade-offs accepted
+## Trade-offs aceitos
 
-| Decision | Trade-off |
+| Decisão | Trade-off |
 |---|---|
-| No formal tests | Faster delivery; risk: regression on changes. Mitigated by TS strict + Zod + manual smoke. |
-| Single role | Saved ~30min; everyone is admin. Migration path documented in PRD §8. |
-| Append-only updates | No edit/delete UI; immutable history. Listed in TODO. |
-| RSC-only reads | No real-time; mutations require navigation/refresh. `revalidatePath` covers it. |
-| `NEXT_PUBLIC_*` for ANON_KEY | Public by design; security is RLS, not key secrecy. |
+| Sem testes formais | Entrega mais rápida; risco: regressão em mudanças. Mitigado por TS strict + Zod + smoke manual. |
+| Perfil único | Economia de ~30min; todos são administradores. Caminho de migração documentado no PRD §8. |
+| Atualizações append-only | Sem UI de edição/exclusão; histórico imutável. Listado no TODO. |
+| Leituras apenas via RSC | Sem tempo real; mutações exigem navegação/refresh. `revalidatePath` cobre isso. |
+| `NEXT_PUBLIC_*` para ANON_KEY | Público por design; a segurança é o RLS, não o segredo da chave. |
