@@ -106,6 +106,26 @@ Esquema do banco de dados com chaves estrangeiras e anotações de políticas RL
 
 ---
 
+## Acesso Rápido (Demo)
+
+Para facilitar a avaliação, utilize as credenciais de teste abaixo no ambiente de deploy:
+
+*   **URL:** [https://bluefields-fullstack-case.vercel.app/](https://bluefields-fullstack-case.vercel.app/)
+*   **Login:** `demo@startuptracker.app`
+*   **Senha:** `senha123`
+
+---
+
+## Acesso Rápido (Demo)
+
+Para facilitar a avaliação, utilize as credenciais de teste abaixo no ambiente de deploy:
+
+*   **URL:** [https://bluefields-fullstack-case.vercel.app/](https://bluefields-fullstack-case.vercel.app/)
+*   **Login:** `demo@startuptracker.app`
+*   **Senha:** `senha123`
+
+---
+
 ## Estrutura do Repositório
 
 ```
