@@ -4,6 +4,17 @@ codemap-tool/
 # Claude Code template's own git history (we want the .claude *content*, not its git)
 .claude/.git/
 
+# Local Claude Code settings (absolute paths, codemap hooks — machine-specific)
+.claude/settings.local.json
+.claude/sessions/
+
+# Cursor local hooks (codemap setup — machine-specific)
+.cursor/
+
+# Playwright artifacts (screenshots, console logs)
+.playwright-mcp/
+login-page.png
+
 # Personal interview-prep notes (job posting, source repo URL, original v1 brainstorm).
 # Kept locally for reference; excluded from the public repo so the project is reusable
 # as a portfolio piece independent of this hiring case.
