@@ -12,6 +12,19 @@ import type {
   Phase,
   RiskLevel,
 } from '@/lib/types';
+import type { Database } from '@/lib/database.types';
+
+type StartupInsert = Database['public']['Tables']['startups']['Insert'];
+
+interface UpdateRowWithAuthor {
+  id: string;
+  content: string;
+  blockers: string;
+  next_steps: string;
+  risk_level: string;
+  created_at: string;
+  profiles: { full_name: string | null } | null;
+}
 
 export async function listStartups(): Promise<StartupCardData[]> {
   const supabase = await createClient();
@@ -27,7 +40,9 @@ export async function listStartups(): Promise<StartupCardData[]> {
   }
 
   return (data ?? []).map((row) => {
-    const profile = row.profiles as { full_name: string | null } | null;
+    // PostgREST returns the FK target as a single object for many-to-one;
+    // the loosely-typed client infers it as an array, so we cast through unknown.
+    const profile = row.profiles as unknown as { full_name: string | null } | null;
     return {
       id: row.id,
       name: row.name,
@@ -63,14 +78,15 @@ export async function getStartup(
     .from('startup_updates')
     .select('id, content, blockers, next_steps, risk_level, created_at, profiles:author_id(full_name)')
     .eq('startup_id', id)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .returns<UpdateRowWithAuthor[]>();
 
   if (uErr) {
     console.error('getStartup updates failed:', uErr.message, { id });
     throw new Error('Erro ao carregar updates.');
   }
 
-  const profile = startup.profiles as { full_name: string | null } | null;
+  const profile = startup.profiles as unknown as { full_name: string | null } | null;
 
   return {
     startup: {
@@ -84,18 +100,15 @@ export async function getStartup(
       responsible_name: profile?.full_name ?? null,
       updated_at: startup.updated_at,
     },
-    updates: (updates ?? []).map((u) => {
-      const author = u.profiles as { full_name: string | null } | null;
-      return {
-        id: u.id,
-        content: u.content,
-        blockers: u.blockers,
-        next_steps: u.next_steps,
-        risk_level: u.risk_level as RiskLevel,
-        created_at: u.created_at,
-        author_name: author?.full_name ?? null,
-      };
-    }),
+    updates: (updates ?? []).map((u) => ({
+      id: u.id,
+      content: u.content,
+      blockers: u.blockers,
+      next_steps: u.next_steps,
+      risk_level: u.risk_level as RiskLevel,
+      created_at: u.created_at,
+      author_name: u.profiles?.full_name ?? null,
+    })),
   };
 }
 
@@ -119,13 +132,15 @@ export async function createStartup(formData: FormData): Promise<ActionResult> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const { error } = await supabase.from('startups').insert({
+  const insertValue: StartupInsert = {
     name: parsed.data.name,
     segment: parsed.data.segment,
     phase: parsed.data.phase,
     description: parsed.data.description,
     responsible_id: user.id,
-  });
+  };
+
+  const { error } = await supabase.from('startups').insert(insertValue);
 
   if (error) {
     console.error('createStartup failed:', error.message);
