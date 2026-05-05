@@ -52,6 +52,16 @@ Construído com Next.js 14, Supabase (Postgres + RLS) e guardrails forçados por
 
 ---
 
+## Acesso Rápido (Demo)
+
+Para facilitar a avaliação, utilize as credenciais de teste abaixo no ambiente de deploy:
+
+*   **URL:** [https://bluefields-fullstack-case.vercel.app/](https://bluefields-fullstack-case.vercel.app/)
+*   **Login:** `demo@startuptracker.app`
+*   **Senha:** `senha123`
+
+---
+
 ## Primeiros Passos
 
 ```bash
